@@ -12,19 +12,19 @@ namespace Lab01
             int diastolic = int.Parse(Console.ReadLine()!);
             if (systolic < 120 && diastolic < 80)
             {
-                Console.WriteLine("normal");
+                Console.WriteLine($"Тиск: {systolic} / {diastolic} - норма");
             }
             else if (systolic < 130 && diastolic < 80)
             {
-                Console.WriteLine("elevated");
+                Console.WriteLine($"Тиск: {systolic} / {diastolic} - підвищений");
             }
             else if (systolic < 140 || diastolic < 90)
             {
-                Console.WriteLine("1st grade of hypertension");
+                Console.WriteLine($"Тиск: {systolic} / {diastolic} - гіпертонія 1 ступеня");
             }
             else
             {
-                Console.WriteLine("2st grade of hypertension");
+                Console.WriteLine($"Тиск: {systolic} / {diastolic} - гіпертонія 2 ступеня");
             }
         }
     }
