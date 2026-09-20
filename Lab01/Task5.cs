@@ -9,25 +9,18 @@ namespace Lab01
         public static void Run()
         {
             int number = int.Parse(Console.ReadLine()!);
-            switch (number)
+            string result = number switch
             {
-                case 1: Console.WriteLine("День: Понеділок, 08:00–18:00");
-                    break;
-                case 2: Console.WriteLine("День: Вівторок, 08:00–18:00");
-                    break;
-                case 3: Console.WriteLine("День: Середа, 09:00–17:00");
-                    break;
-                case 4: Console.WriteLine("День: Четвер, 08:00–18:00");
-                    break;
-                case 5: Console.WriteLine("День: П'тниця, 08:00–16:00");
-                    break;
-                case 6: Console.WriteLine("День: Cубота, 09:00–14:00");
-                    break;
-                case 7: Console.WriteLine("День: Неділя, Вихідний");
-                    break;
-                default: Console.WriteLine("невідомий день");
-                    break;
-            }
+                1 => "День: Понеділок, 08:00–18:00",
+                2 => "День: Вівторок, 08:00–18:00",
+                3 => "День: Середа, 09:00–17:00",
+                4 => "День: Четвер, 08:00–18:00",
+                5 => "День: П'тниця, 08:00–16:00",
+                6 => "День: Cубота, 09:00–14:00",
+                7 => "День: Неділя, Вихідний",
+                _ => "День: невідомий день"
+            };
+            Console.WriteLine(result);
         }
     }
 }
