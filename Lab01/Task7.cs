@@ -52,7 +52,7 @@ namespace Lab01
                 }
                 v++;
             }
-            Console.WriteLine($"***Звіт по прийомах***\nКількість : {n}\nЗагальна сума : {sum:F2} грн\nСередня : {avg:F2} грн\nМін / Макс : {min:F2} грн / {max:F2} грн\nВище середнього : {count} з {n}\nПерший > 1000 : ");
+            Console.WriteLine($"***Звіт по прийомах***\nКількість: {n}\nЗагальна сума: {sum:F2} грн\nСередня: {avg:F2} грн\nМін / Макс: {min:F2} грн / {max:F2} грн\nВище середнього: {count} з {n}\nПерший > 1000: ");
             if (expensive != -1) 
             {
                 Console.WriteLine($"#{expensive + 1} - {prices[expensive]:F2} грн\n");
