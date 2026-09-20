@@ -17,17 +17,18 @@ namespace Lab01
             string age_category;
             if (age <= 17)
             {
-                age_category = "kid";
+                age_category = "дитина";
             }
             else if (age <= 59)
             {
-                age_category = "adult";
+                age_category = "дорослий";
             }
             else
             {
-                age_category = "pensioner";
+                age_category = "пенсіонер";
             }
-            Console.WriteLine(age_category);
+            Console.WriteLine($"Вік: {age}");
+            Console.WriteLine($"Категорія: {age_category}");
         }
     }
 }
