@@ -12,7 +12,7 @@ class Program
         _count++;
         patients[_count] = new Patient("Олена", "Коваль", new DateTime(1993, 8, 20), "B-", "0672345678");
         _count++;
-        patients[_count] = new Patient("Максим", "Бойко", new DateTime(1993, 8, 20), "B-", "0672345678");
+        patients[_count] = new Patient("Максим", "Бойко", new DateTime(2010, 1, 4), "B-", "0672345678");
         _count++;
         patients[_count] = new Patient();
         _count++;
@@ -46,10 +46,10 @@ class Program
         doctors[count_] = new Doctor();
         count_++;
 
-        for (int i = 0; i < doctors.Length; i++) 
+        for (int i = 0; i < doctors.Length; i++)
         {
             Doctor? currentDoctor = doctors[i];
-            if (currentDoctor != null) 
+            if (currentDoctor != null)
             {
                 Console.WriteLine(currentDoctor.ToString());
             }
