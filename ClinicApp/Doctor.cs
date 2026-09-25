@@ -17,7 +17,7 @@ namespace ClinicApp
         public int WorkEndHour {  get; set; }
         public string FullName => FirstName + " " + LastName;
         public int WorkHoursPerDay => WorkEndHour - WorkStartHour;
-        public string WorkSchedule => $"{WorkStartHour:D2}:00-{WorkEndHour:D2}";
+        public string WorkSchedule => $"{WorkStartHour:D2}:00-{WorkEndHour:D2}:00";
         public bool IsAvailableNow => CanAcceptAt(DateTime.Now.Hour);
 
         public Doctor(string firstName, string lastName, string specialty, string licenseNumber, string phone)
