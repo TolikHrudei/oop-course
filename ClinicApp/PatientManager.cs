@@ -10,7 +10,7 @@ namespace ClinicApp
         private const int MaxPatients = 100;
         private Patient[] _patients = new Patient[MaxPatients];
         private int _count = 0;
-        private int Count => _count;
+        public int Count => _count;
         public void Add(Patient patient)
         {
             if (_count >= MaxPatients)
