@@ -8,24 +8,24 @@ class Program
         Console.OutputEncoding = System.Text.Encoding.UTF8;
         Console.WriteLine("=== Лікарі ===");
         Doctor[] doctors = new Doctor[4];
-        int count_ = 0;
+        int _count = 0;
 
-        doctors[count_] = new Doctor("Олег", "Сидоренко", "Кардіологія", "LIC-001", "0441234567");
-        doctors[count_].WorkEndHour = 16;
-        count_++;
+        doctors[_count] = new Doctor("Олег", "Сидоренко", "Кардіологія", "LIC-001", "0441234567");
+        doctors[_count].WorkEndHour = 16;
+        _count++;
 
-        doctors[count_] = new Doctor("Наталія", "Мороз", "Неврологія", "LIC-002", "0442345678");
-        doctors[count_].WorkStartHour = 9;
-        doctors[count_].WorkEndHour = 18;
-        count_++;
+        doctors[_count] = new Doctor("Наталія", "Мороз", "Неврологія", "LIC-002", "0442345678");
+        doctors[_count].WorkStartHour = 9;
+        doctors[_count].WorkEndHour = 18;
+        _count++;
 
-        doctors[count_] = new Doctor("Андрій", "Власенко", "Педіатрія");
-        doctors[count_].LicenseNumber = "LIC-003";
-        doctors[count_].Phone = "0443456789";
-        count_++;
+        doctors[_count] = new Doctor("Андрій", "Власенко", "Педіатрія");
+        doctors[_count].LicenseNumber = "LIC-003";
+        doctors[_count].Phone = "0443456789";
+        _count++;
 
-        doctors[count_] = new Doctor();
-        count_++;
+        doctors[_count] = new Doctor();
+        _count++;
 
         for (int i = 0; i < doctors.Length; i++)
         {
@@ -39,6 +39,7 @@ class Program
         Console.WriteLine();
         RunPatientMenu();
         RunDoctorMenu();
+        RunAppointmentTest(); 
     }
 
     static void RunPatientMenu()
@@ -85,11 +86,26 @@ class Program
 
         if (int.TryParse(input, out int hour))
         {
-            Console.WriteLine($"Ви ввели годину: {hour}. (Тут можна викликати CanAcceptAt)");
+            Console.WriteLine($"Ви ввели годину: {hour}.");
         }
         else
         {
             Console.WriteLine("Помилка: введено некоректне число!");
         }
+    }
+    static void RunAppointmentTest()
+    {
+        Console.WriteLine("\n=== Тест прийомів (Appointment) ==="); Appointment a1 = new Appointment(1, 1, new DateTime(2026, 5, 9, 10, 0, 0)); 
+        Appointment a2 = new Appointment(2, 2, new DateTime(2026, 5, 9, 11, 0, 0), 45);
+        Appointment a3 = new Appointment(3, 3, new DateTime(2026, 5, 10, 9, 0, 0), 20);
+        Console.WriteLine(a1.ToString());
+        Console.WriteLine(a2.ToString());
+        Console.WriteLine(a3.ToString());
+
+        Console.WriteLine("\n// Після Cancel та Complete:");
+        a1.Cancel("Пацієнт не зміг прийти");
+        a2.Complete();
+        Console.WriteLine(a1.ToString());
+        Console.WriteLine(a2.ToString());
     }
 }
