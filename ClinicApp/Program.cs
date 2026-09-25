@@ -12,6 +12,7 @@ class Program
         RunPatientMenu(clinic);
         RunDoctorMenu(clinic);
         RunAppointmentMenu(clinic);
+        TestGrowablePatientManager();
 
         clinic.DisplaySchedule(new DateTime(2027, 5, 9));
         clinic.GenerateReport();
@@ -39,6 +40,32 @@ class Program
         clinic.Doctors.Add(d1);
         clinic.Doctors.Add(d2);
         clinic.Doctors.Add(d3);
+    }
+    static void TestGrowablePatientManager()
+    {
+        Console.WriteLine("=== Тест GrowablePatientManager ===");
+        Console.WriteLine("Додаємо пацієнтів одного за одним...");
+
+        GrowablePatientManager manager = new GrowablePatientManager();
+        for (int i = 1; i <= 20; i++)
+        {
+            Patient p = new Patient("Тест", $"Пацієнт{i}");
+            manager.Add(p);
+
+            Console.WriteLine($"Додано [{i}]. Розмір: {manager.Count} / {manager.Capacity}");
+        }
+
+        Console.WriteLine("\nТест пошуку:");
+
+        Patient? p10 = manager.FindById(10);
+        Console.WriteLine($"FindById(10) -> {(p10 != null ? $"{p10.FirstName} {p10.LastName}" : "не знайдено")}");
+
+        Patient? p99 = manager.FindById(99);
+        Console.WriteLine($"FindById(99) -> {(p99 != null ? $"{p99.FirstName} {p99.LastName}" : "не знайдено")}");
+
+        Console.WriteLine("\nПорівняння:");
+        Console.WriteLine("PatientManager:         100 місць (фіксовано)");
+        Console.WriteLine($"GrowablePatientManager: {manager.Capacity} місця (зросте при потребі)");
     }
 
     static void RunAppointmentMenu(Clinic clinic)
