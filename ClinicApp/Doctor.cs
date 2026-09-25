@@ -18,7 +18,7 @@ namespace ClinicApp
         public string FullName => FirstName + " " + LastName;
         public int WorkHoursPerDay => WorkEndHour - WorkStartHour;
         public string WorkSchedule => $"{WorkStartHour:D2}:00-{WorkEndHour:D2}";
-        bool IsAvialableNow => CanAcceptAt(DateTime.Now.Hour);
+        public bool IsAvailableNow => CanAcceptAt(DateTime.Now.Hour);
 
         public Doctor(string firstName, string lastName, string specialty, string licenseNumber, string phone)
         {
@@ -49,7 +49,7 @@ namespace ClinicApp
 
         public override string ToString()
         {
-            string status = IsAvialableNow ? "доступний" : "не в робочий час";
+            string status = IsAvailableNow ? "доступний" : "не в робочий час";
             return $"[{Id}] {FullName} | {Specialty} | {LicenseNumber} | Тел. {Phone}, {WorkSchedule}, ({WorkHoursPerDay} год) | {status}";
         }
     }
