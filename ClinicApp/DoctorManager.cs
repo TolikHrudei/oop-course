@@ -10,7 +10,7 @@ namespace ClinicApp
     {
         private const int MaxDoctors = 50;
         private Doctor[] _doctors = new Doctor[MaxDoctors];
-        int _count = 0;
+        public int _count = 0;
         private int Count => _count;
         public void Add(Doctor doctor)
         {
