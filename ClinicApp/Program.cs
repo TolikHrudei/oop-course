@@ -38,6 +38,7 @@ class Program
 
         Console.WriteLine();
         RunPatientMenu();
+        RunDoctorMenu();
     }
 
     static void RunPatientMenu()
@@ -56,5 +57,39 @@ class Program
 
         manager.DisplayAll();
         manager.DisplayStats();
+    }
+
+    static void RunDoctorMenu()
+    {
+        DoctorManager manager = new DoctorManager();
+        Doctor d1 = new Doctor("Олег", "Сидоренко", "Кардіологія", "LIC-001", "0441234567");
+        d1.WorkEndHour = 16;
+
+        Doctor d2 = new Doctor("Наталія", "Мороз", "Неврологія", "LIC-002", "0442345678");
+        d2.WorkStartHour = 9;
+        d2.WorkEndHour = 18;
+
+        Doctor d3 = new Doctor("Андрій", "Власенко", "Педіатрія");
+        d3.LicenseNumber = "LIC-003";
+        d3.Phone = "0443456789";
+
+        manager.Add(d1);
+        manager.Add(d2);
+        manager.Add(d3);
+
+        manager.DisplayAll();
+        manager.DisplayStats();
+        Console.WriteLine("\n--- Перевірка доступності ---");
+        Console.Write("Введіть годину (0-23) для перевірки: ");
+        string input = Console.ReadLine()!;
+
+        if (int.TryParse(input, out int hour))
+        {
+            Console.WriteLine($"Ви ввели годину: {hour}. (Тут можна викликати CanAcceptAt)");
+        }
+        else
+        {
+            Console.WriteLine("Помилка: введено некоректне число!");
+        }
     }
 }
