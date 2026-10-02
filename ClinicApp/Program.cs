@@ -3,7 +3,7 @@ using System;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         Console.OutputEncoding = System.Text.Encoding.UTF8;
 
@@ -13,27 +13,48 @@ class Program
         RunDoctorMenu(clinic);
         RunAppointmentMenu(clinic);
         TestGrowablePatientManager();
+        Doctor[] cardiologists = clinic.Doctors.FindBySpeciality(Speciality.Cardiology);
+        Doctor[] found = clinic.Doctors.FindBySpeciality("кардіо"); Console.WriteLine($"Знайдено кардіологів за Enum: {cardiologists.Length}, за текстом: {found.Length}");
 
+        WorkSchedule morning = new WorkSchedule(8, 16);
+        WorkSchedule copy = morning;
+        Console.WriteLine($"Оригінал розкладу: {morning}, Копія: {copy}");
+        Console.WriteLine("\n--- Індексатори ---");
+        Console.WriteLine($"Перший пацієнт: {clinic.Patients[0]?.FullName}");
+
+        Console.WriteLine("\n--- Перевантаження (GetByDate) ---");
+        Appointment[] today = clinic.Appointments.GetByDate(2027, 5, 9);
+        Console.WriteLine($"Записів на 09.05.2027: {today?.Length ?? 0}");
+        Console.WriteLine("\n--- TryFindById (out parameter) ---");
+        if (clinic.Patients.TryFindById(1, out Patient patient))
+        {
+            Console.WriteLine($"Знайдено успішно: {patient.FullName}");
+        }
+
+        Console.WriteLine("\n--- Оператори ?. та ?? ---");
+        string missingName = clinic.Patients.FindById(99)?.FullName ?? "Пацієнта не знайдено";
+        Console.WriteLine($"Пошук пацієнта з ID 99: {missingName}");
+
+        Console.WriteLine("====================================\n");
         clinic.DisplaySchedule(new DateTime(2027, 5, 9));
         clinic.GenerateReport();
     }
 
     static void RunPatientMenu(Clinic clinic)
     {
-        clinic.Patients.Add(new Patient("Іван", "Петренко", new DateTime(1985, 5, 15), "A+", "0501234567"));
-        clinic.Patients.Add(new Patient("Олена", "Коваль", new DateTime(1993, 8, 20), "B-", "0672345678"));
-        clinic.Patients.Add(new Patient("Максим", "Бойко", new DateTime(2010, 1, 4), "B-", "0672345678"));
+        clinic.Patients.Add(new Patient("Іван", "Петренко", new DateTime(1985, 5, 15), BloodType.APositive, "0501234567"));
+        clinic.Patients.Add(new Patient("Олена", "Коваль", new DateTime(1993, 8, 20), BloodType.BNegative, "0672345678"));
+        clinic.Patients.Add(new Patient("Максим", "Бойко", new DateTime(2010, 1, 4), BloodType.BNegative, "0672345678"));
         clinic.Patients.Add(new Patient("Марія", "Ткач"));
     }
 
     static void RunDoctorMenu(Clinic clinic)
     {
-        Doctor d1 = new Doctor("Олег", "Сидоренко", "Кардіологія", "LIC-001", "0441234567");
-        d1.WorkEndHour = 16;
-        Doctor d2 = new Doctor("Наталія", "Мороз", "Неврологія", "LIC-002", "0442345678");
-        d2.WorkStartHour = 9;
-        d2.WorkEndHour = 18;
-        Doctor d3 = new Doctor("Андрій", "Власенко", "Педіатрія");
+        Doctor d1 = new Doctor("Олег", "Сидоренко", Speciality.Cardiology, "LIC-001", "0441234567");
+        d1.Schedule = new WorkSchedule (8, 16);
+        Doctor d2 = new Doctor("Наталія", "Мороз", Speciality.Neurology, "LIC-002", "0442345678");
+        d2.Schedule = new WorkSchedule (9, 18);
+        Doctor d3 = new Doctor("Андрій", "Власенко", Speciality.Pediatrics);
         d3.LicenseNumber = "LIC-003";
         d3.Phone = "0443456789";
 

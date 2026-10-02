@@ -12,6 +12,17 @@ namespace ClinicApp
         private Doctor[] _doctors = new Doctor[MaxDoctors];
         public int _count = 0;
         public int Count => _count;
+        public Doctor? this[int index]
+        {
+            get
+            {
+                if(index >= 0 && index < _count)
+                {
+                    return _doctors[index];
+                }
+                return null;
+            }
+        }
         public void Add(Doctor doctor)
         {
             if (_count >= MaxDoctors){
@@ -43,34 +54,50 @@ namespace ClinicApp
             }
             return null;
         }
-        public Doctor[] FindBySpecialty(string name)
+        public Doctor[] FindBySpeciality(string query)
         {
-            string search = name.ToLower();
+            int matchCount = 0;
+            string lowerQuery = query.ToLower();
+
+            for (int i = 0; i < _count; i++)
+            {
+                if (_doctors[i] != null && ClinicFormatter.FormatSpeciality(_doctors[i].Specialty).ToLower().Contains(lowerQuery))
+                {
+                    matchCount++;
+                }
+            }
+
+            Doctor[] result = new Doctor[matchCount];
+            int resultIndex = 0;
+            for (int i = 0; i < _count; i++)
+            {
+                if (_doctors[i] != null && ClinicFormatter.FormatSpeciality(_doctors[i].Specialty).ToLower().Contains(lowerQuery))
+                {
+                    result[resultIndex] = _doctors[i];
+                    resultIndex++;
+                }
+            }
+            return result;
+        }
+        public Doctor[] FindBySpeciality(Speciality spec)
+        {
             int matchCount = 0;
             for (int i = 0; i < _count; i++)
             {
-                if (_doctors != null)
+                if (_doctors[i] != null && _doctors[i].Specialty == spec)
                 {
-                    string sName = _doctors[i].Specialty.ToLower();
-                    if (sName.Contains(search))
-                    {
-                        matchCount++;
-                    }
+                    matchCount++;
                 }
             }
             Doctor[] result = new Doctor[matchCount];
             int resultIndex = 0;
             for (int i = 0; i < _count; i++)
             {
-                if (_doctors[i] != null)
-                {
-                    string sName = _doctors[i].Specialty.ToLower();
-                    if (sName.Contains(search))
-                    {
-                        result[resultIndex] = _doctors[i];
-                        resultIndex++;
-                    }
-                }
+               if (_doctors[i] != null && _doctors[i].Specialty == spec)
+               {
+                    result[resultIndex] = _doctors[i];
+                    resultIndex++;
+               }
             }
             return result;
         }
@@ -137,11 +164,11 @@ namespace ClinicApp
             for (int i = 0; i < _count; i++)
             {
                 if (_doctors[i] == null) continue;
-                string currentSpec = _doctors[i].Specialty;
+                Speciality currentSpec = _doctors[i].Specialty;
                 bool isDuplicate = false;
                 for (int j = 0; j < i; j++)
                 {
-                    if (_doctors[j] != null && _doctors[j].Specialty.ToLower() == currentSpec.ToLower())
+                    if (_doctors[j] != null && _doctors[j].Specialty == currentSpec)
                     {
                         isDuplicate = true;
                         break;
@@ -152,7 +179,7 @@ namespace ClinicApp
                     int specCount = 0;
                     for (int k = 0; k < _count; k++)
                     {
-                        if(_doctors[k] != null && _doctors[k].Specialty.ToLower() == currentSpec.ToLower())
+                        if(_doctors[k] != null && _doctors[k].Specialty == currentSpec)
                         {
                             specCount++;
                         }

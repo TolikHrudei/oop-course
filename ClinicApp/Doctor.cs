@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ClinicApp
 {
@@ -10,17 +8,18 @@ namespace ClinicApp
         public int Id { get; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
-        public string Specialty { get; set; }
+        public Speciality Specialty { get; set; }
         public string LicenseNumber { get; set; }
         public string Phone { get; set; }
-        public int WorkStartHour  { get; set; }
-        public int WorkEndHour {  get; set; }
+        public WorkSchedule Schedule { get; set; }
         public string FullName => FirstName + " " + LastName;
-        public int WorkHoursPerDay => WorkEndHour - WorkStartHour;
-        public string WorkSchedule => $"{WorkStartHour:D2}:00-{WorkEndHour:D2}:00";
-        public bool IsAvailableNow => CanAcceptAt(DateTime.Now.Hour);
+        public bool IsAvailableNow => Schedule.IsNow;
+        public bool CanAcceptAt(int hour)
+        {
+            return Schedule.Contains(hour);
+        }
 
-        public Doctor(string firstName, string lastName, string specialty, string licenseNumber, string phone)
+        public Doctor(string firstName, string lastName, Speciality specialty, string licenseNumber, string phone)
         {
             Id = _nextId;
             _nextId++;
@@ -29,28 +28,27 @@ namespace ClinicApp
             Specialty = specialty;
             LicenseNumber = licenseNumber;
             Phone = phone;
-            WorkStartHour = 8;
-            WorkEndHour = 17;
+
+            Schedule = new WorkSchedule (8, 17);
         }
-        public Doctor(string firstName, string lastName, string specialty)
+
+        public Doctor(string firstName, string lastName, Speciality specialty)
             : this(firstName, lastName, specialty, "Невідомо", "0000000000")
         {
-
         }
-         public Doctor()
-            : this("Невідомий", "Лікар", "Загальна практика")
-        {
 
-        }
-        public bool CanAcceptAt(int hour)
+        public Doctor()
+           : this("Невідомий", "Лікар", Speciality.General) 
         {
-            return hour >= WorkStartHour && hour < WorkEndHour;
         }
 
         public override string ToString()
         {
             string status = IsAvailableNow ? "доступний" : "не в робочий час";
-            return $"[{Id}] {FullName} | {Specialty} | {LicenseNumber} | Тел. {Phone}, {WorkSchedule}, ({WorkHoursPerDay} год) | {status}";
+            string specFormatted = ClinicFormatter.FormatSpeciality(Specialty);
+            string phoneFormatted = ClinicFormatter.FormatPhone(Phone);
+
+            return $"[{Id}] {FullName} | {specFormatted} | {LicenseNumber} | Тел. {phoneFormatted}, {Schedule} | {status}";
         }
     }
 }
