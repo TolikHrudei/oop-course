@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ClinicApp
 {
@@ -10,17 +8,28 @@ namespace ClinicApp
         public int Id { get; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
-        public string Specialty { get; set; }
+        public Speciality Specialty { get; set; }
         public string LicenseNumber { get; set; }
         public string Phone { get; set; }
-        public int WorkStartHour  { get; set; }
-        public int WorkEndHour {  get; set; }
-        public string FullName => FirstName + " " + LastName;
-        public int WorkHoursPerDay => WorkEndHour - WorkStartHour;
-        public string WorkSchedule => $"{WorkStartHour:D2}:00-{WorkEndHour:D2}:00";
-        public bool IsAvailableNow => CanAcceptAt(DateTime.Now.Hour);
+        public struct WorkSchedule
+        {
+            public int Start { get; set; }
+            public int End { get; set; }
 
-        public Doctor(string firstName, string lastName, string specialty, string licenseNumber, string phone)
+            public int HoursPerDay => End - Start;
+            public string Display => $"{Start:D2}:00-{End:D2}:00";
+            public bool IsNow()
+            {
+                int currentHour = DateTime.Now.Hour;
+                return currentHour >= Start && currentHour < End;
+            }
+        }
+        public WorkSchedule Schedule { get; set; }
+
+        public string FullName => FirstName + " " + LastName;
+        public bool IsAvailableNow => Schedule.IsNow();
+
+        public Doctor(string firstName, string lastName, Speciality specialty, string licenseNumber, string phone)
         {
             Id = _nextId;
             _nextId++;
@@ -29,28 +38,29 @@ namespace ClinicApp
             Specialty = specialty;
             LicenseNumber = licenseNumber;
             Phone = phone;
-            WorkStartHour = 8;
-            WorkEndHour = 17;
+
+            Schedule = new WorkSchedule { Start = 8, End = 17 };
         }
-        public Doctor(string firstName, string lastName, string specialty)
+
+        public Doctor(string firstName, string lastName, Speciality specialty)
             : this(firstName, lastName, specialty, "Невідомо", "0000000000")
         {
-
         }
-         public Doctor()
-            : this("Невідомий", "Лікар", "Загальна практика")
+
+        public Doctor()
+           : this("Невідомий", "Лікар", Speciality.General) 
         {
-
         }
+
         public bool CanAcceptAt(int hour)
         {
-            return hour >= WorkStartHour && hour < WorkEndHour;
+            return hour >= Schedule.Start && hour < Schedule.End;
         }
 
         public override string ToString()
         {
             string status = IsAvailableNow ? "доступний" : "не в робочий час";
-            return $"[{Id}] {FullName} | {Specialty} | {LicenseNumber} | Тел. {Phone}, {WorkSchedule}, ({WorkHoursPerDay} год) | {status}";
+            return $"[{Id}] {FullName} | {Specialty} | {LicenseNumber} | Тел. {Phone}, {Schedule.Display}, ({Schedule.HoursPerDay} год) | {status}";
         }
     }
 }

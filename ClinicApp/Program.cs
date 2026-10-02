@@ -20,20 +20,19 @@ class Program
 
     static void RunPatientMenu(Clinic clinic)
     {
-        clinic.Patients.Add(new Patient("Іван", "Петренко", new DateTime(1985, 5, 15), "A+", "0501234567"));
-        clinic.Patients.Add(new Patient("Олена", "Коваль", new DateTime(1993, 8, 20), "B-", "0672345678"));
-        clinic.Patients.Add(new Patient("Максим", "Бойко", new DateTime(2010, 1, 4), "B-", "0672345678"));
+        clinic.Patients.Add(new Patient("Іван", "Петренко", new DateTime(1985, 5, 15), BloodType.Apositive, "0501234567"));
+        clinic.Patients.Add(new Patient("Олена", "Коваль", new DateTime(1993, 8, 20), BloodType.BNegative, "0672345678"));
+        clinic.Patients.Add(new Patient("Максим", "Бойко", new DateTime(2010, 1, 4), BloodType.BNegative, "0672345678"));
         clinic.Patients.Add(new Patient("Марія", "Ткач"));
     }
 
     static void RunDoctorMenu(Clinic clinic)
     {
-        Doctor d1 = new Doctor("Олег", "Сидоренко", "Кардіологія", "LIC-001", "0441234567");
-        d1.WorkEndHour = 16;
-        Doctor d2 = new Doctor("Наталія", "Мороз", "Неврологія", "LIC-002", "0442345678");
-        d2.WorkStartHour = 9;
-        d2.WorkEndHour = 18;
-        Doctor d3 = new Doctor("Андрій", "Власенко", "Педіатрія");
+        Doctor d1 = new Doctor("Олег", "Сидоренко", Speciality.Cardiology, "LIC-001", "0441234567");
+        d1.Schedule = new Doctor.WorkSchedule { End = 16 };
+        Doctor d2 = new Doctor("Наталія", "Мороз", Speciality.Neurology, "LIC-002", "0442345678");
+        d2.Schedule = new Doctor.WorkSchedule { Start = 9, End = 18 };
+        Doctor d3 = new Doctor("Андрій", "Власенко", Speciality.Pediatrics);
         d3.LicenseNumber = "LIC-003";
         d3.Phone = "0443456789";
 
