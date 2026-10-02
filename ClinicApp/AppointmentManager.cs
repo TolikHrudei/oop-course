@@ -20,7 +20,17 @@ namespace ClinicApp
             _patients = patients;
             _doctors = doctors;
         }
-
+        public Appointment? this[int index]
+        {
+            get
+            {
+                if (index >= 0 && index < _count)
+                {
+                    return _appointments[index];
+                }
+                return null;
+            }
+        }
         private Appointment? FindById(int id)
         {
             for (int i = 0; i < _count; i++)

@@ -12,6 +12,17 @@ namespace ClinicApp
         private Doctor[] _doctors = new Doctor[MaxDoctors];
         public int _count = 0;
         public int Count => _count;
+        public Doctor? this[int index]
+        {
+            get
+            {
+                if(index >= 0 && index < _count)
+                {
+                    return _doctors[index];
+                }
+                return null;
+            }
+        }
         public void Add(Doctor doctor)
         {
             if (_count >= MaxDoctors){
