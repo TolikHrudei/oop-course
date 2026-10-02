@@ -33,6 +33,30 @@ namespace ClinicApp
             _count++;
             Console.WriteLine($"Пацієнта [{patient.Id}] {patient.FullName} додано.");
         }
+        public bool TryFindById(int id, out Patient patient)
+        {
+            patient = FindById(id);
+            return patient != null;
+        }
+        public Patient[] FindByBloodType(BloodType type)
+        {
+            int matchCount = 0;
+            for (int i = 0; i < _count; i++)
+            {
+                if (_patients[i] != null && _patients[i].BloodType == type) matchCount++;
+            }
+
+            Patient[] result = new Patient[matchCount];
+            int index = 0;
+            for (int i = 0; i < _count; i++)
+            {
+                if (_patients[i] != null && _patients[i].BloodType == type)
+                {
+                    result[index++] = _patients[i];
+                }
+            }
+            return result;
+        }
         public Patient? FindById(int id)
         {
             for (int i = 0; i < _count; i++)

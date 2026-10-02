@@ -3,7 +3,7 @@ using System;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         Console.OutputEncoding = System.Text.Encoding.UTF8;
 
@@ -13,7 +13,29 @@ class Program
         RunDoctorMenu(clinic);
         RunAppointmentMenu(clinic);
         TestGrowablePatientManager();
+        Doctor[] cardiologists = clinic.Doctors.FindBySpeciality(Speciality.Cardiology);
+        Doctor[] found = clinic.Doctors.FindBySpeciality("кардіо"); Console.WriteLine($"Знайдено кардіологів за Enum: {cardiologists.Length}, за текстом: {found.Length}");
 
+        WorkSchedule morning = new WorkSchedule(8, 16);
+        WorkSchedule copy = morning;
+        Console.WriteLine($"Оригінал розкладу: {morning}, Копія: {copy}");
+        Console.WriteLine("\n--- Індексатори ---");
+        Console.WriteLine($"Перший пацієнт: {clinic.Patients[0]?.FullName}");
+
+        Console.WriteLine("\n--- Перевантаження (GetByDate) ---");
+        Appointment[] today = clinic.Appointments.GetByDate(2027, 5, 9);
+        Console.WriteLine($"Записів на 09.05.2027: {today?.Length ?? 0}");
+        Console.WriteLine("\n--- TryFindById (out parameter) ---");
+        if (clinic.Patients.TryFindById(1, out Patient patient))
+        {
+            Console.WriteLine($"Знайдено успішно: {patient.FullName}");
+        }
+
+        Console.WriteLine("\n--- Оператори ?. та ?? ---");
+        string missingName = clinic.Patients.FindById(99)?.FullName ?? "Пацієнта не знайдено";
+        Console.WriteLine($"Пошук пацієнта з ID 99: {missingName}");
+
+        Console.WriteLine("====================================\n");
         clinic.DisplaySchedule(new DateTime(2027, 5, 9));
         clinic.GenerateReport();
     }

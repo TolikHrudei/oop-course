@@ -54,7 +54,32 @@ namespace ClinicApp
             }
             return null;
         }
-        public Doctor[] FindBySpecialty(Speciality spec)
+        public Doctor[] FindBySpeciality(string query)
+        {
+            int matchCount = 0;
+            string lowerQuery = query.ToLower();
+
+            for (int i = 0; i < _count; i++)
+            {
+                if (_doctors[i] != null && ClinicFormatter.FormatSpeciality(_doctors[i].Specialty).ToLower().Contains(lowerQuery))
+                {
+                    matchCount++;
+                }
+            }
+
+            Doctor[] result = new Doctor[matchCount];
+            int resultIndex = 0;
+            for (int i = 0; i < _count; i++)
+            {
+                if (_doctors[i] != null && ClinicFormatter.FormatSpeciality(_doctors[i].Specialty).ToLower().Contains(lowerQuery))
+                {
+                    result[resultIndex] = _doctors[i];
+                    resultIndex++;
+                }
+            }
+            return result;
+        }
+        public Doctor[] FindBySpeciality(Speciality spec)
         {
             int matchCount = 0;
             for (int i = 0; i < _count; i++)
