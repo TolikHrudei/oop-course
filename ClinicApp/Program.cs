@@ -20,7 +20,7 @@ class Program
 
     static void RunPatientMenu(Clinic clinic)
     {
-        clinic.Patients.Add(new Patient("Іван", "Петренко", new DateTime(1985, 5, 15), BloodType.Apositive, "0501234567"));
+        clinic.Patients.Add(new Patient("Іван", "Петренко", new DateTime(1985, 5, 15), BloodType.APositive, "0501234567"));
         clinic.Patients.Add(new Patient("Олена", "Коваль", new DateTime(1993, 8, 20), BloodType.BNegative, "0672345678"));
         clinic.Patients.Add(new Patient("Максим", "Бойко", new DateTime(2010, 1, 4), BloodType.BNegative, "0672345678"));
         clinic.Patients.Add(new Patient("Марія", "Ткач"));
@@ -29,9 +29,9 @@ class Program
     static void RunDoctorMenu(Clinic clinic)
     {
         Doctor d1 = new Doctor("Олег", "Сидоренко", Speciality.Cardiology, "LIC-001", "0441234567");
-        d1.Schedule = new Doctor.WorkSchedule { End = 16 };
+        d1.Schedule = new WorkSchedule (8, 16);
         Doctor d2 = new Doctor("Наталія", "Мороз", Speciality.Neurology, "LIC-002", "0442345678");
-        d2.Schedule = new Doctor.WorkSchedule { Start = 9, End = 18 };
+        d2.Schedule = new WorkSchedule (9, 18);
         Doctor d3 = new Doctor("Андрій", "Власенко", Speciality.Pediatrics);
         d3.LicenseNumber = "LIC-003";
         d3.Phone = "0443456789";
