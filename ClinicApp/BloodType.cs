@@ -7,7 +7,7 @@ namespace ClinicApp
     public enum BloodType
     {
         Unknown,
-        Apositive,
+        APositive,
         ANegative,
         BPositive,
         BNegative, 
