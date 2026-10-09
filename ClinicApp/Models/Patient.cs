@@ -1,6 +1,8 @@
 ﻿using ClinicApp.Enums;
 using ClinicApp.Utils;
 using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace ClinicApp.Models
 {
@@ -11,63 +13,31 @@ namespace ClinicApp.Models
         private string _lastName = "";
         private DateTime _dateOfBirth;
         private string _phone = "";
-        private string _email = "";
         public int Id { get; }
         public BloodType BloodType { get; set; }
-
-        public string Email
-        {
-            get { return _email; }
-            set
-            {
-                ClinicValidator.ValidateEmail(value);
-                _email = value;
-            }
-        }
+        public string Email { get; set; }
         public string FirstName
         {
             get { return _firstName; }
-            set
-            {
-                ClinicValidator.ValidateName(value, nameof(FirstName));
-                _firstName = value;
-            }
+            set { _firstName = value; }
         }
 
         public string LastName
         {
             get { return _lastName; }
-            set
-            {
-                ClinicValidator.ValidateName(value, nameof(LastName));
-                _lastName = value;
-            }
+            set { _lastName = value; }
         }
+
         public DateTime DateOfBirth
         {
             get { return _dateOfBirth; }
-            set
-            {
-                ClinicValidator.ValidateDate(value, nameof(DateOfBirth));
-                _dateOfBirth = value;
-            }
+            set { _dateOfBirth = value; }
         }
+
         public string Phone
         {
             get { return _phone; }
-            set
-            {
-                ClinicValidator.ValidatePhone(value);
-
-                if (value.StartsWith("+38"))
-                {
-                    _phone = value.Substring(3);
-                }
-                else
-                {
-                    _phone = value;
-                }
-            }
+            set { _phone = value; }
         }
         public string FullName => FirstName + " " + LastName;
 
@@ -84,19 +54,20 @@ namespace ClinicApp.Models
                 return age;
             }
         }
+
         public bool IsAdult => Age >= 18;
         public Patient(string firstName, string lastName, DateTime dob, BloodType bloodType, string phone)
         {
+            Id = _nextId;
+            _nextId++;
             FirstName = firstName;
             LastName = lastName;
             DateOfBirth = dob;
             BloodType = bloodType;
             Phone = phone;
             Email = "";
-
-            Id = _nextId;
-            _nextId++;
         }
+
         public Patient(string firstName, string lastName)
             : this(firstName, lastName, new DateTime(2000, 1, 1), BloodType.Unknown, "0000000000")
         {
@@ -114,6 +85,7 @@ namespace ClinicApp.Models
 
             return $"[{Id}] {FullName}, {ageFormatted}, Кров: {bloodFormatted}, Тел. {phoneFormatted}";
         }
+
         public string GetAgeCategory()
         {
             if (Age < 18)
