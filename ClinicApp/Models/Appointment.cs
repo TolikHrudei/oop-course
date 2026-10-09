@@ -1,7 +1,6 @@
 ﻿using ClinicApp.Enums;
+using ClinicApp.Utils;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ClinicApp.Models
 {
@@ -19,7 +18,11 @@ namespace ClinicApp.Models
         public int DurationMinutes
         {
             get { return _durationMinutes; }
-            set { _durationMinutes = value; }
+            set
+            {
+                ClinicValidator.ValidatePositive(value, nameof(DurationMinutes));
+                _durationMinutes = value;
+            }
         }
 
         public AppointmentStatus Status { get; private set; }
@@ -30,13 +33,15 @@ namespace ClinicApp.Models
 
         public Appointment(int patientId, int doctorId, DateTime scheduledAt, int durationMinutes = 30)
         {
-            Id = _nextId++;
             PatientId = patientId;
             DoctorId = doctorId;
             ScheduledAt = scheduledAt;
             DurationMinutes = durationMinutes;
             Status = AppointmentStatus.Scheduled;
             Notes = "";
+
+            Id = _nextId;
+            _nextId++;
         }
 
         public bool Cancel(string reason = "")
