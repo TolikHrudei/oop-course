@@ -1,9 +1,11 @@
-﻿using System;
+﻿using ClinicApp.Enums;
+using ClinicApp.Models;
+using System;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
-namespace ClinicApp
+namespace ClinicApp.Managers
 {
     public class PatientManager
     {
