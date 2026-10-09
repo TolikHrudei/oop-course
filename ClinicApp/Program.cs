@@ -1,4 +1,8 @@
-﻿using ClinicApp;
+﻿using ClinicApp.Enums;
+using ClinicApp.Models;
+using ClinicApp.Managers;
+using ClinicApp.Utils;
+using ClinicApp;
 using System;
 
 class Program

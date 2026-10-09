@@ -1,10 +1,13 @@
-﻿using System;
+﻿using ClinicApp.Enums;
+using ClinicApp.Models;
+using ClinicApp.Utils;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Security.AccessControl;
 using System.Text;
 
-namespace ClinicApp
+namespace ClinicApp.Managers
 {
     public class DoctorManager
     {
