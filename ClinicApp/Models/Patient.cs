@@ -9,15 +9,35 @@ namespace ClinicApp.Models
     public class Patient
     {
         private static int _nextId = 1;
-
+        private string _firstName = "";
+        private string _lastName = "";
+        private DateTime _dateOfBirth;
+        private string _phone = "";
         public int Id { get; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public DateTime DateOfBirth { get; set; }
         public BloodType BloodType { get; set; }
-        public string Phone { get; set; }
         public string Email { get; set; }
+        public string FirstName
+        {
+            get { return _firstName; }
+            set { _firstName = value; }
+        }
+        public string LastName
+        {
+            get { return _lastName; }
+            set { _lastName = value; }
+        }
+        public DateTime DateOfBirth
+        {
+            get { return _dateOfBirth; }
+            set { _dateOfBirth = value; }
+        }
+        public string Phone
+        {
+            get { return _phone; }
+            set { _phone = value; }
+        }
         public string FullName => FirstName + " " + LastName;
+
         public int Age
         {
             get
@@ -46,17 +66,15 @@ namespace ClinicApp.Models
         public Patient(string firstName, string lastName)
             : this(firstName, lastName, new DateTime(2000, 1, 1), BloodType.Unknown, "0000000000")
         {
-            
         }
         public Patient()
             : this("Невідомий", "Пацієнт")
         {
-
         }
         public override string ToString()
         {
             string bloodFormatted = ClinicFormatter.FormatBloodType(BloodType);
-            string ageFormatted = ClinicFormatter.FormatAge(Age); 
+            string ageFormatted = ClinicFormatter.FormatAge(Age);
             string phoneFormatted = ClinicFormatter.FormatPhone(Phone);
 
             return $"[{Id}] {FullName}, {ageFormatted}, Кров: {bloodFormatted}, Тел. {phoneFormatted}";

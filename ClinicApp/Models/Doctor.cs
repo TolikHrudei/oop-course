@@ -7,12 +7,33 @@ namespace ClinicApp.Models
     public class Doctor
     {
         private static int _nextId = 1;
+        private string _firstName = "";
+        private string _lastName = "";
+        private string _licenseNumber = "";
+        private string _phone = "";
         public int Id { get; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
+
+        public string FirstName
+        {
+            get { return _firstName; }
+            set { _firstName = value; }
+        }
+        public string LastName
+        {
+            get { return _lastName; }
+            set { _lastName = value; }
+        }
         public Speciality Specialty { get; set; }
-        public string LicenseNumber { get; set; }
-        public string Phone { get; set; }
+        public string LicenseNumber
+        {
+            get { return _licenseNumber; }
+            set { _licenseNumber = value; }
+        }
+        public string Phone
+        {
+            get { return _phone; }
+            set { _phone = value; }
+        }
         public WorkSchedule Schedule { get; set; }
         public string FullName => FirstName + " " + LastName;
         public bool IsAvailableNow => Schedule.IsNow;
@@ -20,7 +41,6 @@ namespace ClinicApp.Models
         {
             return Schedule.Contains(hour);
         }
-
         public Doctor(string firstName, string lastName, Speciality specialty, string licenseNumber, string phone)
         {
             Id = _nextId;
@@ -31,19 +51,16 @@ namespace ClinicApp.Models
             LicenseNumber = licenseNumber;
             Phone = phone;
 
-            Schedule = new WorkSchedule (8, 17);
+            Schedule = new WorkSchedule(8, 17);
         }
-
         public Doctor(string firstName, string lastName, Speciality specialty)
             : this(firstName, lastName, specialty, "Невідомо", "0000000000")
         {
         }
-
         public Doctor()
-           : this("Невідомий", "Лікар", Speciality.General) 
+           : this("Невідомий", "Лікар", Speciality.General)
         {
         }
-
         public override string ToString()
         {
             string status = IsAvailableNow ? "доступний" : "не в робочий час";

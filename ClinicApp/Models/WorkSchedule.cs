@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ClinicApp.Models
 {
@@ -8,9 +6,22 @@ namespace ClinicApp.Models
     {
         public int Start { get; }
         public int End { get; }
-
         public WorkSchedule(int start, int end)
         {
+            if (start < 0 || start > 23)
+            {
+                throw new ArgumentOutOfRangeException(nameof(start), "Час початку має бути в межах 0-23");
+            }
+
+            if (end < 1 || end > 24)
+            {
+                throw new ArgumentOutOfRangeException(nameof(end), "Час закінчення має бути в межах 1-24");
+            }
+            if (start >= end)
+            {
+                throw new ArgumentException("Час початку має бути меншим за час закінчення", nameof(start));
+            }
+
             Start = start;
             End = end;
         }
