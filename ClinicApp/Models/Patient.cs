@@ -7,29 +7,25 @@ namespace ClinicApp.Models
     public class Patient
     {
         private static int _nextId = 1;
+
         private string _firstName = "";
         private string _lastName = "";
         private DateTime _dateOfBirth;
         private string _phone = "";
-        private string _email = "";
+
         public int Id { get; }
         public BloodType BloodType { get; set; }
+        public string Email { get; set; }
 
-        public string Email
-        {
-            get { return _email; }
-            set
-            {
-                ClinicValidator.ValidateEmail(value);
-                _email = value;
-            }
-        }
         public string FirstName
         {
             get { return _firstName; }
             set
             {
-                ClinicValidator.ValidateName(value, nameof(FirstName));
+                if (string.IsNullOrWhiteSpace(value) || value.Length > 50)
+                {
+                    throw new ArgumentException("Некоректне ім'я", nameof(FirstName));
+                }
                 _firstName = value;
             }
         }
@@ -39,36 +35,49 @@ namespace ClinicApp.Models
             get { return _lastName; }
             set
             {
-                ClinicValidator.ValidateName(value, nameof(LastName));
+                if (string.IsNullOrWhiteSpace(value) || value.Length > 50)
+                {
+                    throw new ArgumentException("Некоректне прізвище", nameof(LastName));
+                }
                 _lastName = value;
             }
         }
+
         public DateTime DateOfBirth
         {
             get { return _dateOfBirth; }
             set
             {
-                ClinicValidator.ValidateDate(value, nameof(DateOfBirth));
+                if (value > DateTime.Today || value.Year < 1900)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(DateOfBirth), "Некоректна дата народження");
+                }
                 _dateOfBirth = value;
             }
         }
+
         public string Phone
         {
             get { return _phone; }
             set
             {
-                ClinicValidator.ValidatePhone(value);
+                if (string.IsNullOrWhiteSpace(value) || value.Length != 10)
+                {
+                    throw new ArgumentException("Некоректна довжина телефону", nameof(Phone));
+                }
 
-                if (value.StartsWith("+38"))
+                foreach (char c in value)
                 {
-                    _phone = value.Substring(3);
+                    if (!char.IsDigit(c))
+                    {
+                        throw new ArgumentException("Телефон має містити лише цифри", nameof(Phone));
+                    }
                 }
-                else
-                {
-                    _phone = value;
-                }
+
+                _phone = value;
             }
         }
+
         public string FullName => FirstName + " " + LastName;
 
         public int Age
@@ -84,7 +93,9 @@ namespace ClinicApp.Models
                 return age;
             }
         }
+
         public bool IsAdult => Age >= 18;
+
         public Patient(string firstName, string lastName, DateTime dob, BloodType bloodType, string phone)
         {
             FirstName = firstName;
@@ -97,6 +108,7 @@ namespace ClinicApp.Models
             Id = _nextId;
             _nextId++;
         }
+
         public Patient(string firstName, string lastName)
             : this(firstName, lastName, new DateTime(2000, 1, 1), BloodType.Unknown, "0000000000")
         {
@@ -106,6 +118,7 @@ namespace ClinicApp.Models
             : this("Невідомий", "Пацієнт")
         {
         }
+
         public override string ToString()
         {
             string bloodFormatted = ClinicFormatter.FormatBloodType(BloodType);
@@ -114,6 +127,7 @@ namespace ClinicApp.Models
 
             return $"[{Id}] {FullName}, {ageFormatted}, Кров: {bloodFormatted}, Тел. {phoneFormatted}";
         }
+
         public string GetAgeCategory()
         {
             if (Age < 18)

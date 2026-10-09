@@ -6,6 +6,7 @@ namespace ClinicApp.Models
     {
         public int Start { get; }
         public int End { get; }
+
         public WorkSchedule(int start, int end)
         {
             if (start < 0 || start > 23)

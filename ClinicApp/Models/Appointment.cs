@@ -1,5 +1,4 @@
 ﻿using ClinicApp.Enums;
-using ClinicApp.Utils;
 using System;
 
 namespace ClinicApp.Models
@@ -7,7 +6,9 @@ namespace ClinicApp.Models
     public class Appointment
     {
         private static int _nextId = 1;
+
         private int _durationMinutes;
+
         public int Id { get; }
         public int PatientId { get; }
         public int DoctorId { get; }
@@ -18,15 +19,20 @@ namespace ClinicApp.Models
             get { return _durationMinutes; }
             set
             {
-                ClinicValidator.ValidatePositive(value, nameof(DurationMinutes));
+                if (value <= 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(DurationMinutes), "Тривалість має бути більшою за нуль");
+                }
                 _durationMinutes = value;
             }
         }
 
         public AppointmentStatus Status { get; private set; }
         public string Notes { get; private set; }
+
         public DateTime EndsAt => ScheduledAt.AddMinutes(DurationMinutes);
         public bool IsUpcoming => ScheduledAt > DateTime.Now && Status == AppointmentStatus.Scheduled;
+
         public Appointment(int patientId, int doctorId, DateTime scheduledAt, int durationMinutes = 30)
         {
             PatientId = patientId;
@@ -53,6 +59,7 @@ namespace ClinicApp.Models
             }
             return false;
         }
+
         public bool Complete()
         {
             if (Status == AppointmentStatus.Scheduled)
@@ -62,6 +69,7 @@ namespace ClinicApp.Models
             }
             return false;
         }
+
         public override string ToString()
         {
             string info = $"[{Id}] Пацієнт #{PatientId} -> #{DoctorId} | {ScheduledAt:dd.MM.yyyy HH:mm}-{EndsAt:HH:mm} | {Status}";
