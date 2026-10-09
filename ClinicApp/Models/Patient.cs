@@ -12,20 +12,27 @@ namespace ClinicApp.Models
         private string _lastName = "";
         private DateTime _dateOfBirth;
         private string _phone = "";
+        private string _email = "";
 
         public int Id { get; }
         public BloodType BloodType { get; set; }
-        public string Email { get; set; }
+
+        public string Email
+        {
+            get { return _email; }
+            set
+            {
+                ClinicValidator.ValidateEmail(value);
+                _email = value;
+            }
+        }
 
         public string FirstName
         {
             get { return _firstName; }
             set
             {
-                if (string.IsNullOrWhiteSpace(value) || value.Length > 50)
-                {
-                    throw new ArgumentException("Некоректне ім'я", nameof(FirstName));
-                }
+                ClinicValidator.ValidateName(value, nameof(FirstName));
                 _firstName = value;
             }
         }
@@ -35,10 +42,7 @@ namespace ClinicApp.Models
             get { return _lastName; }
             set
             {
-                if (string.IsNullOrWhiteSpace(value) || value.Length > 50)
-                {
-                    throw new ArgumentException("Некоректне прізвище", nameof(LastName));
-                }
+                ClinicValidator.ValidateName(value, nameof(LastName));
                 _lastName = value;
             }
         }
@@ -48,10 +52,7 @@ namespace ClinicApp.Models
             get { return _dateOfBirth; }
             set
             {
-                if (value > DateTime.Today || value.Year < 1900)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(DateOfBirth), "Некоректна дата народження");
-                }
+                ClinicValidator.ValidateDate(value, nameof(DateOfBirth));
                 _dateOfBirth = value;
             }
         }
@@ -61,20 +62,16 @@ namespace ClinicApp.Models
             get { return _phone; }
             set
             {
-                if (string.IsNullOrWhiteSpace(value) || value.Length != 10)
-                {
-                    throw new ArgumentException("Некоректна довжина телефону", nameof(Phone));
-                }
+                ClinicValidator.ValidatePhone(value);
 
-                foreach (char c in value)
+                if (value.StartsWith("+38"))
                 {
-                    if (!char.IsDigit(c))
-                    {
-                        throw new ArgumentException("Телефон має містити лише цифри", nameof(Phone));
-                    }
+                    _phone = value.Substring(3);
                 }
-
-                _phone = value;
+                else
+                {
+                    _phone = value;
+                }
             }
         }
 
