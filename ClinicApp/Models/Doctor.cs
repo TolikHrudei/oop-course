@@ -16,24 +16,46 @@ namespace ClinicApp.Models
         public string FirstName
         {
             get { return _firstName; }
-            set { _firstName = value; }
+            set
+            {
+                ClinicValidator.ValidateName(value, nameof(FirstName));
+                _firstName = value;
+            }
         }
         public string LastName
         {
             get { return _lastName; }
-            set { _lastName = value; }
+            set
+            {
+                ClinicValidator.ValidateName(value, nameof(LastName));
+                _lastName = value;
+            }
         }
         public Speciality Specialty { get; set; }
+
         public string LicenseNumber
         {
             get { return _licenseNumber; }
-            set { _licenseNumber = value; }
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    throw new ArgumentException("Ліцензія не може бути порожньою", nameof(LicenseNumber));
+                }
+                _licenseNumber = value;
+            }
         }
+
         public string Phone
         {
             get { return _phone; }
-            set { _phone = value; }
+            set
+            {
+                ClinicValidator.ValidatePhone(value);
+                _phone = value;
+            }
         }
+
         public WorkSchedule Schedule { get; set; }
         public string FullName => FirstName + " " + LastName;
         public bool IsAvailableNow => Schedule.IsNow;
@@ -41,18 +63,20 @@ namespace ClinicApp.Models
         {
             return Schedule.Contains(hour);
         }
+
         public Doctor(string firstName, string lastName, Speciality specialty, string licenseNumber, string phone)
         {
-            Id = _nextId;
-            _nextId++;
             FirstName = firstName;
             LastName = lastName;
             Specialty = specialty;
             LicenseNumber = licenseNumber;
             Phone = phone;
-
             Schedule = new WorkSchedule(8, 17);
+
+            Id = _nextId;
+            _nextId++;
         }
+
         public Doctor(string firstName, string lastName, Speciality specialty)
             : this(firstName, lastName, specialty, "Невідомо", "0000000000")
         {
@@ -66,7 +90,6 @@ namespace ClinicApp.Models
             string status = IsAvailableNow ? "доступний" : "не в робочий час";
             string specFormatted = ClinicFormatter.FormatSpeciality(Specialty);
             string phoneFormatted = ClinicFormatter.FormatPhone(Phone);
-
             return $"[{Id}] {FullName} | {specFormatted} | {LicenseNumber} | Тел. {phoneFormatted}, {Schedule} | {status}";
         }
     }
