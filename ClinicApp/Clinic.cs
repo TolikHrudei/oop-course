@@ -1,8 +1,5 @@
 ﻿using ClinicApp.Managers;
-using ClinicApp.Models;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ClinicApp
 {
@@ -12,6 +9,7 @@ namespace ClinicApp
         public PatientManager Patients { get; }
         public DoctorManager Doctors { get; }
         public AppointmentManager Appointments { get; }
+        public MedicalRecordManager MedicalRecords { get; }
 
         public Clinic(string name)
         {
@@ -19,45 +17,40 @@ namespace ClinicApp
             Patients = new PatientManager();
             Doctors = new DoctorManager();
             Appointments = new AppointmentManager(Patients, Doctors);
+            MedicalRecords = new MedicalRecordManager();
         }
-
         public void DisplaySchedule(DateTime date)
         {
             Console.WriteLine($"\n=== Розклад на {date:dd.MM.yyyy} ===");
-            Appointment[] dailyAppointments = Appointments.GetByDate(date);
-            Appointments.DisplayList(dailyAppointments);
-        }
+            var apps = Appointments.GetByDate(date);
+            if (apps.Length == 0)
+            {
+                Console.WriteLine("На цю дату записів немає.");
+                return;
+            }
 
+            for (int i = 0; i < apps.Length; i++)
+            {
+                var app = apps[i];
+                var patient = Patients.FindById(app.PatientId);
+                var doctor = Doctors.FindById(app.DoctorId);
+
+                string patientName = patient != null ? patient.FullName : $"Пацієнт #{app.PatientId}";
+                string doctorName = doctor != null ? doctor.FullName : $"Лікар #{app.DoctorId}";
+
+                Console.WriteLine($"[{app.Id}] {patientName} -> {doctorName} | {app.ScheduledAt:dd.MM.yyyy HH:mm}-{app.EndsAt:HH:mm} | {app.Status}");
+            }
+        }
         public void GenerateReport()
         {
-            Console.WriteLine("\n╔══════════════════════════════════════════════╗");
-            Console.WriteLine($"║ Звіт — {Name,-37} ║");
-            Console.WriteLine("╠══════════════════════════════════════════════╣");
-            Console.WriteLine($"║ Пацієнтів:         {Patients.Count,-25} ║");
-            Console.WriteLine($"║ Лікарів:           {Doctors.Count,-25} ║");
-
-            Appointment[] upcoming = Appointments.GetUpcoming();
-            Console.WriteLine($"║ Майбутніх записів: {upcoming.Length,-25} ║");
-            Console.WriteLine("╠══════════════════════════════════════════════╣");
-            Console.WriteLine("║ Навантаження лікарів (майбутні записи):      ║");
-
-            Doctor[] allDoctors = Doctors.GetAll();
-            for (int i = 0; i < allDoctors.Length; i++)
-            {
-                if (allDoctors[i] == null) continue;
-
-                int docLoad = 0;
-                for (int j = 0; j < upcoming.Length; j++)
-                {
-                    if (upcoming[j] != null && upcoming[j].DoctorId == allDoctors[i].Id)
-                    {
-                        docLoad++;
-                    }
-                }
-                string loadString = $"  {allDoctors[i].FullName} ({allDoctors[i].Specialty}): {docLoad} записів";
-                Console.WriteLine($"║ {loadString,-44} ║");
-            }
-            Console.WriteLine("╚══════════════════════════════════════════════╝");
+            Console.WriteLine("\n┌────────────────────────────────────────┐");
+            Console.WriteLine($"│ Звіт — {Name,-31} │");
+            Console.WriteLine("├────────────────────────────────────────┤");
+            Console.WriteLine($"│ Пацієнтів:          {Patients.Count,-18} │");
+            Console.WriteLine($"│ Лікарів:            {Doctors.Count,-18} │");
+            Console.WriteLine($"│ Майбутніх записів:  {Appointments.GetUpcoming().Length,-18} │");
+            Console.WriteLine($"│ Медичних записів:   {MedicalRecords.Count,-18} │");
+            Console.WriteLine("└────────────────────────────────────────┘");
         }
     }
 }
