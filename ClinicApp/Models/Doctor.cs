@@ -1,18 +1,17 @@
 ﻿using ClinicApp.Enums;
+using ClinicApp.Interfaces;
 using ClinicApp.Utils;
 using System;
 
 namespace ClinicApp.Models
 {
-    public class Doctor
+    public class Doctor : ISchedulable
     {
         private static int _nextId = 1;
-
         private string _firstName = "";
         private string _lastName = "";
         private string _licenseNumber = "";
         private string _phone = "";
-
         public int Id { get; }
 
         public string FirstName
@@ -24,7 +23,6 @@ namespace ClinicApp.Models
                 _firstName = value;
             }
         }
-
         public string LastName
         {
             get { return _lastName; }
@@ -34,9 +32,7 @@ namespace ClinicApp.Models
                 _lastName = value;
             }
         }
-
         public Speciality Specialty { get; set; }
-
         public string LicenseNumber
         {
             get { return _licenseNumber; }
@@ -49,7 +45,6 @@ namespace ClinicApp.Models
                 _licenseNumber = value;
             }
         }
-
         public string Phone
         {
             get { return _phone; }
@@ -69,16 +64,33 @@ namespace ClinicApp.Models
         }
 
         public WorkSchedule Schedule { get; set; }
-
         public string FullName => FirstName + " " + LastName;
-
         public bool IsAvailableNow => Schedule.IsNow;
-
         public bool CanAcceptAt(int hour)
         {
             return Schedule.Contains(hour);
         }
 
+        public bool CanSchedule(DateTime at)
+        {
+            return CanAcceptAt(at.Hour);
+        }
+
+        public DateTime[] GetAvailableSlots(DateTime date, int slotCount)
+        {
+            ClinicValidator.ValidatePositive(slotCount, nameof(slotCount));
+
+            int count = Math.Min(slotCount, Schedule.HoursPerDay);
+            DateTime[] slots = new DateTime[count];
+            DateTime startDate = date.Date;
+
+            for (int i = 0; i < count; i++)
+            {
+                slots[i] = startDate.AddHours(Schedule.Start + i);
+            }
+
+            return slots;
+        }
         public Doctor(string firstName, string lastName, Speciality specialty, string licenseNumber, string phone)
         {
             FirstName = firstName;
@@ -91,17 +103,14 @@ namespace ClinicApp.Models
             Id = _nextId;
             _nextId++;
         }
-
         public Doctor(string firstName, string lastName, Speciality specialty)
             : this(firstName, lastName, specialty, "Невідомо", "0000000000")
         {
         }
-
         public Doctor()
            : this("Невідомий", "Лікар", Speciality.General)
         {
         }
-
         public override string ToString()
         {
             string status = IsAvailableNow ? "доступний" : "не в робочий час";
