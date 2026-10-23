@@ -1,4 +1,5 @@
-﻿using ClinicApp.Models;
+﻿using ClinicApp.Interfaces;
+using ClinicApp.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -12,7 +13,6 @@ namespace ClinicApp.Managers
         private int _count = 0;
         private readonly PatientManager _patients;
         private readonly DoctorManager _doctors;
-
         public int Count => _count;
 
         public AppointmentManager(PatientManager patients, DoctorManager doctors)
@@ -20,7 +20,6 @@ namespace ClinicApp.Managers
             _patients = patients;
             _doctors = doctors;
         }
-
         public Appointment? this[int index]
         {
             get
@@ -31,6 +30,23 @@ namespace ClinicApp.Managers
                 }
                 return _appointments[index];
             }
+        }
+        public static int CancelAll(ICancellable[] items, string reason = "")
+        {
+            if (items == null)
+            {
+                return 0;
+            }
+
+            int cancelledCount = 0;
+            for (int i = 0; i < items.Length; i++)
+            {
+                if (items[i] != null && items[i].Cancel(reason))
+                {
+                    cancelledCount++;
+                }
+            }
+            return cancelledCount;
         }
 
         public Appointment? Book(int patientId, int doctorId, DateTime scheduledAt, int durationMinutes = 30)
@@ -58,7 +74,6 @@ namespace ClinicApp.Managers
             Appointment app = new Appointment(patientId, doctorId, scheduledAt, durationMinutes);
             _appointments[_count] = app;
             _count++;
-
             Console.WriteLine($"Запис [{app.Id}] створено: {patient.FullName} -> {doctor.FullName} о {scheduledAt:dd.MM.yyyy HH:mm}");
             return app;
         }
@@ -85,6 +100,30 @@ namespace ClinicApp.Managers
             return result;
         }
 
+        public Appointment[] GetByPatient(int patientId)
+        {
+            int matchCount = 0;
+            for (int i = 0; i < _count; i++)
+            {
+                if (_appointments[i].PatientId == patientId)
+                {
+                    matchCount++;
+                }
+            }
+
+            Appointment[] result = new Appointment[matchCount];
+            int index = 0;
+            for (int i = 0; i < _count; i++)
+            {
+                if (_appointments[i].PatientId == patientId)
+                {
+                    result[index] = _appointments[i];
+                    index++;
+                }
+            }
+            return result;
+        }
+
         public Appointment[] GetByDate(DateTime date)
         {
             int matchCount = 0;
@@ -106,7 +145,6 @@ namespace ClinicApp.Managers
                     index++;
                 }
             }
-
             return result;
         }
 
@@ -131,7 +169,6 @@ namespace ClinicApp.Managers
                     index++;
                 }
             }
-
             return result;
         }
 
@@ -142,7 +179,6 @@ namespace ClinicApp.Managers
                 Console.WriteLine("Список записів на прийом порожній.");
                 return;
             }
-
             for (int i = 0; i < _count; i++)
             {
                 Console.WriteLine(_appointments[i]);

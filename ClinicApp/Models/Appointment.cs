@@ -5,10 +5,12 @@ using System;
 
 namespace ClinicApp.Models
 {
-    public class Appointment : IPayable
+    public class Appointment : IPayable, ICancellable
     {
         private static int _nextId = 1;
+
         private int _durationMinutes;
+
         public int Id { get; }
         public int PatientId { get; }
         public int DoctorId { get; }
@@ -27,6 +29,10 @@ namespace ClinicApp.Models
         public AppointmentStatus Status { get; private set; }
         public string Notes { get; private set; }
         public bool IsPaid { get; private set; }
+
+        public bool IsCancelled => Status == AppointmentStatus.Cancelled;
+        public string CancellationReason => IsCancelled ? Notes : "";
+
         public DateTime EndsAt => ScheduledAt.AddMinutes(DurationMinutes);
         public bool IsUpcoming => ScheduledAt > DateTime.Now && Status == AppointmentStatus.Scheduled;
 
@@ -43,13 +49,15 @@ namespace ClinicApp.Models
             Id = _nextId;
             _nextId++;
         }
+
         public decimal GetCost()
         {
             return DurationMinutes * 10m;
         }
+
         public void MarkPaid()
         {
-            if (Status != AppointmentStatus.Cancelled)
+            if (!IsCancelled)
             {
                 IsPaid = true;
             }
@@ -68,6 +76,7 @@ namespace ClinicApp.Models
             }
             return false;
         }
+
         public bool Complete()
         {
             if (Status == AppointmentStatus.Scheduled)
@@ -77,6 +86,7 @@ namespace ClinicApp.Models
             }
             return false;
         }
+
         public override string ToString()
         {
             string info = $"[{Id}] Пацієнт #{PatientId} -> #{DoctorId} | {ScheduledAt:dd.MM.yyyy HH:mm}-{EndsAt:HH:mm} | {Status}";
