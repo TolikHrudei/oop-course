@@ -14,7 +14,6 @@ namespace ClinicApp.Managers
         private readonly PatientManager _patients;
         private readonly DoctorManager _doctors;
         public int Count => _count;
-
         public AppointmentManager(PatientManager patients, DoctorManager doctors)
         {
             _patients = patients;
@@ -39,6 +38,7 @@ namespace ClinicApp.Managers
                 Console.WriteLine("Неможливо створити запис: ліміт досягнуто.");
                 return null;
             }
+
             var patient = _patients.FindById(app.PatientId);
             if (patient == null)
             {
@@ -53,7 +53,6 @@ namespace ClinicApp.Managers
             }
             _appointments[_count] = app;
             _count++;
-
             Console.WriteLine($"Запис [{app.Id}] створено: {patient.FullName} -> {doctor.FullName} о {app.ScheduledAt:dd.MM.yyyy HH:mm}");
             return app;
         }
@@ -71,13 +70,82 @@ namespace ClinicApp.Managers
         {
             return AddAppointment(new SpecialistAppointment(patientId, doctorId, scheduledAt, topic, durationMinutes));
         }
+
+        public Appointment[] GetUrgent()
+        {
+            int count = 0;
+            for (int i = 0; i < _count; i++)
+            {
+                if (_appointments[i] is UrgentAppointment)
+                {
+                    count++;
+                }
+            }
+
+            Appointment[] result = new Appointment[count];
+            int index = 0;
+            for (int i = 0; i < _count; i++)
+            {
+                if (_appointments[i] is UrgentAppointment)
+                {
+                    result[index] = _appointments[i];
+                    index++;
+                }
+            }
+            return result;
+        }
+        public Appointment[] GetSpecialist()
+        {
+            int count = 0;
+            for (int i = 0; i < _count; i++)
+            {
+                if (_appointments[i] is SpecialistAppointment)
+                {
+                    count++;
+                }
+            }
+            Appointment[] result = new Appointment[count];
+            int index = 0;
+            for (int i = 0; i < _count; i++)
+            {
+                if (_appointments[i] is SpecialistAppointment)
+                {
+                    result[index] = _appointments[i];
+                    index++;
+                }
+            }
+            return result;
+        }
+
+        public Appointment[] GetRegular()
+        {
+            int count = 0;
+            for (int i = 0; i < _count; i++)
+            {
+                if (_appointments[i] is RegularAppointment)
+                {
+                    count++;
+                }
+            }
+            Appointment[] result = new Appointment[count];
+            int index = 0;
+            for (int i = 0; i < _count; i++)
+            {
+                if (_appointments[i] is RegularAppointment)
+                {
+                    result[index] = _appointments[i];
+                    index++;
+                }
+            }
+            return result;
+        }
+
         public static int CancelAll(ICancellable[] items, string reason = "")
         {
             if (items == null)
             {
                 return 0;
             }
-
             int cancelledCount = 0;
             for (int i = 0; i < items.Length; i++)
             {
@@ -121,7 +189,6 @@ namespace ClinicApp.Managers
                     matchCount++;
                 }
             }
-
             Appointment[] result = new Appointment[matchCount];
             int index = 0;
             for (int i = 0; i < _count; i++)
@@ -134,6 +201,7 @@ namespace ClinicApp.Managers
             }
             return result;
         }
+
         public Appointment[] GetByDate(DateTime date)
         {
             int matchCount = 0;
@@ -156,6 +224,7 @@ namespace ClinicApp.Managers
             }
             return result;
         }
+
         public Appointment[] GetUpcoming()
         {
             int matchCount = 0;
@@ -166,6 +235,7 @@ namespace ClinicApp.Managers
                     matchCount++;
                 }
             }
+
             Appointment[] result = new Appointment[matchCount];
             int index = 0;
             for (int i = 0; i < _count; i++)
@@ -178,6 +248,30 @@ namespace ClinicApp.Managers
             }
             return result;
         }
+
+        public void DisplayAppointment(Appointment app)
+        {
+            if (app == null) return;
+            var patient = _patients.FindById(app.PatientId);
+            var doctor = _doctors.FindById(app.DoctorId);
+
+            string patientName = patient != null ? patient.FullName : $"Пацієнт #{app.PatientId}";
+            string doctorName = doctor != null ? doctor.FullName : $"Лікар #{app.DoctorId}";
+
+            Console.WriteLine($"[{app.Id}] {app.GetDescription()} | {patientName} -> {doctorName} | {app.ScheduledAt:dd.MM.yyyy HH:mm}-{app.EndsAt:HH:mm} | {app.Status} | {app.GetCost():F2} грн");
+        }
+        public void DisplayAppointments(Appointment[] apps)
+        {
+            if (apps == null || apps.Length == 0)
+            {
+                Console.WriteLine("Записів не знайдено.");
+                return;
+            }
+            for (int i = 0; i < apps.Length; i++)
+            {
+                DisplayAppointment(apps[i]);
+            }
+        }
         public void DisplayAll()
         {
             if (_count == 0)
@@ -187,7 +281,7 @@ namespace ClinicApp.Managers
             }
             for (int i = 0; i < _count; i++)
             {
-                Console.WriteLine(_appointments[i]);
+                DisplayAppointment(_appointments[i]);
             }
         }
     }
