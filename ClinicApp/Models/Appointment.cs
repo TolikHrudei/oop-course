@@ -8,9 +8,7 @@ namespace ClinicApp.Models
     public class Appointment : IPayable, ICancellable
     {
         private static int _nextId = 1;
-
         private int _durationMinutes;
-
         public int Id { get; }
         public int PatientId { get; }
         public int DoctorId { get; }
@@ -29,10 +27,8 @@ namespace ClinicApp.Models
         public AppointmentStatus Status { get; private set; }
         public string Notes { get; private set; }
         public bool IsPaid { get; private set; }
-
         public bool IsCancelled => Status == AppointmentStatus.Cancelled;
         public string CancellationReason => IsCancelled ? Notes : "";
-
         public DateTime EndsAt => ScheduledAt.AddMinutes(DurationMinutes);
         public bool IsUpcoming => ScheduledAt > DateTime.Now && Status == AppointmentStatus.Scheduled;
 
@@ -50,11 +46,18 @@ namespace ClinicApp.Models
             _nextId++;
         }
 
-        public decimal GetCost()
+        public virtual decimal GetCost()
         {
             return DurationMinutes * 10m;
         }
-
+        public virtual string GetDescription()
+        {
+            return "Прийом";
+        }
+        public int GetPriority()
+        {
+            return 3;
+        }
         public void MarkPaid()
         {
             if (!IsCancelled)
@@ -62,7 +65,6 @@ namespace ClinicApp.Models
                 IsPaid = true;
             }
         }
-
         public bool Cancel(string reason = "")
         {
             if (Status == AppointmentStatus.Scheduled)
@@ -86,10 +88,9 @@ namespace ClinicApp.Models
             }
             return false;
         }
-
         public override string ToString()
         {
-            string info = $"[{Id}] Пацієнт #{PatientId} -> #{DoctorId} | {ScheduledAt:dd.MM.yyyy HH:mm}-{EndsAt:HH:mm} | {Status}";
+            string info = $"[{Id}] {GetDescription()} | Пацієнт #{PatientId} -> #{DoctorId} | {ScheduledAt:dd.MM.yyyy HH:mm}-{EndsAt:HH:mm} | {Status} | {GetCost():F2} грн";
             if (Notes.Length > 0)
             {
                 info += $" | {Notes}";
