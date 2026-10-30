@@ -21,6 +21,8 @@ class Program
 
         SeedInitialData(clinic);
 
+        DemonstrateOverrideVsNew();
+
         bool running = true;
         while (running)
         {
@@ -68,6 +70,16 @@ class Program
         }
     }
 
+    static void DemonstrateOverrideVsNew()
+    {
+        Console.WriteLine("\n== new vs override ==");
+        UrgentAppointment urgent = new UrgentAppointment(1, 1, DateTime.Today, "тест");
+        Appointment app = urgent;
+
+        Console.WriteLine($"Через Appointment:       {app.GetDescription()} | пріоритет {app.GetPriority()}");
+        Console.WriteLine($"Через UrgentAppointment: {urgent.GetDescription()} | пріоритет {urgent.GetPriority()}");
+    }
+
     static void SeedInitialData(Clinic clinic)
     {
         clinic.Patients.Add(new Patient("Іван", "Петренко", new DateTime(1985, 5, 15), BloodType.APositive, "0501234567"));
@@ -83,8 +95,8 @@ class Program
         clinic.Doctors.Add(d2);
 
         clinic.Appointments.Book(1, 1, DateTime.Today.AddDays(1).AddHours(10), 30);
-        clinic.Appointments.Book(1, 2, DateTime.Today.AddDays(2).AddHours(11), 45);
-        clinic.Appointments.Book(1, 1, DateTime.Today.AddDays(3).AddHours(14), 20);
+        clinic.Appointments.BookUrgent(1, 2, DateTime.Today.AddDays(2).AddHours(11), "біль у грудях", 30);
+        clinic.Appointments.BookSpecialist(1, 1, DateTime.Today.AddDays(3).AddHours(14), "кардіологія", 45);
 
         clinic.MedicalRecords.Add(new Diagnosis(1, 1, DateTime.Today.AddDays(-30), "I10", "Гіпертонічна хвороба", true));
         clinic.MedicalRecords.Add(new Diagnosis(1, 2, DateTime.Today.AddDays(-5), "J06.9", "Гострий ринофарингіт", false));
@@ -353,7 +365,6 @@ class Program
             Console.WriteLine("Некоректне значення.");
             return;
         }
-
         bool isChronic = (chronicVal == 1);
 
         try
@@ -379,13 +390,11 @@ class Program
             Console.WriteLine("Некоректне число.");
             return;
         }
-
         if (clinic.Patients.FindById(patientId) == null)
         {
             Console.WriteLine("Пацієнта з таким ID не знайдено.");
             return;
         }
-
         Console.Write("ID лікаря: ");
         if (!int.TryParse(Console.ReadLine(), out int doctorId))
         {
@@ -438,7 +447,6 @@ class Program
             Console.WriteLine($"Помилка: {e.Message}");
         }
     }
-
     static void AddPrescriptionMenu(Clinic clinic)
     {
         Console.Write("ID пацієнта: ");
@@ -460,7 +468,6 @@ class Program
             Console.WriteLine("Некоректне число.");
             return;
         }
-
         if (clinic.Doctors.FindById(doctorId) == null)
         {
             Console.WriteLine("Лікаря з таким ID не знайдено.");
@@ -497,7 +504,6 @@ class Program
             Console.WriteLine($"Помилка: {e.Message}");
         }
     }
-
     static void ShowDoctorRecordsMenu(Clinic clinic)
     {
         Console.Write("ID лікаря: ");
@@ -554,7 +560,6 @@ class Program
             }
         }
     }
-
     static void ShowPatientDebtMenu(Clinic clinic)
     {
         Console.Write("ID пацієнта: ");
@@ -562,7 +567,6 @@ class Program
         {
             return;
         }
-
         IPayable[] unpaid = clinic.Billing.GetUnpaidByPatient(patientId);
         decimal debt = clinic.Billing.GetPatientDebt(patientId);
 
@@ -570,11 +574,9 @@ class Program
         {
             Console.WriteLine($"Неоплачені записи пацієнта #{patientId}:");
         }
-
         clinic.Billing.DisplayUnpaid(unpaid);
         Console.WriteLine($"Борг: {debt:F2} грн");
     }
-
     static void ShowAllUnpaidMenu(Clinic clinic)
     {
         IPayable[] unpaid = clinic.Billing.GetAllUnpaid();
@@ -588,7 +590,6 @@ class Program
         {
             return;
         }
-
         bool success = clinic.Billing.PayAppointment(appointmentId);
         if (success)
         {
@@ -599,7 +600,6 @@ class Program
             Console.WriteLine("Не вдалося оплатити: запис не знайдено, вже оплачено або скасовано.");
         }
     }
-
     static void ShowTotalDebtMenu(Clinic clinic)
     {
         decimal totalDebt = clinic.Billing.GetTotalDebt();
