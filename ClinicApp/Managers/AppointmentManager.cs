@@ -14,7 +14,6 @@ namespace ClinicApp.Managers
         private readonly PatientManager _patients;
         private readonly DoctorManager _doctors;
         public int Count => _count;
-
         public AppointmentManager(PatientManager patients, DoctorManager doctors)
         {
             _patients = patients;
@@ -31,13 +30,122 @@ namespace ClinicApp.Managers
                 return _appointments[index];
             }
         }
+
+        private Appointment? AddAppointment(Appointment app)
+        {
+            if (_count >= MaxAppointments)
+            {
+                Console.WriteLine("Неможливо створити запис: ліміт досягнуто.");
+                return null;
+            }
+
+            var patient = _patients.FindById(app.PatientId);
+            if (patient == null)
+            {
+                Console.WriteLine($"Пацієнта з ID #{app.PatientId} не знайдено.");
+                return null;
+            }
+            var doctor = _doctors.FindById(app.DoctorId);
+            if (doctor == null)
+            {
+                Console.WriteLine($"Лікаря з ID #{app.DoctorId} не знайдено.");
+                return null;
+            }
+            _appointments[_count] = app;
+            _count++;
+            Console.WriteLine($"Запис [{app.Id}] створено: {patient.FullName} -> {doctor.FullName} о {app.ScheduledAt:dd.MM.yyyy HH:mm}");
+            return app;
+        }
+
+        public Appointment? Book(int patientId, int doctorId, DateTime scheduledAt, int durationMinutes = 30)
+        {
+            return AddAppointment(new RegularAppointment(patientId, doctorId, scheduledAt, durationMinutes));
+        }
+        public Appointment? BookUrgent(int patientId, int doctorId, DateTime scheduledAt, string urgencyNote = "", int durationMinutes = 30)
+        {
+            return AddAppointment(new UrgentAppointment(patientId, doctorId, scheduledAt, urgencyNote, durationMinutes));
+        }
+
+        public Appointment? BookSpecialist(int patientId, int doctorId, DateTime scheduledAt, string topic = "", int durationMinutes = 45)
+        {
+            return AddAppointment(new SpecialistAppointment(patientId, doctorId, scheduledAt, topic, durationMinutes));
+        }
+
+        public Appointment[] GetUrgent()
+        {
+            int count = 0;
+            for (int i = 0; i < _count; i++)
+            {
+                if (_appointments[i] is UrgentAppointment)
+                {
+                    count++;
+                }
+            }
+
+            Appointment[] result = new Appointment[count];
+            int index = 0;
+            for (int i = 0; i < _count; i++)
+            {
+                if (_appointments[i] is UrgentAppointment)
+                {
+                    result[index] = _appointments[i];
+                    index++;
+                }
+            }
+            return result;
+        }
+        public Appointment[] GetSpecialist()
+        {
+            int count = 0;
+            for (int i = 0; i < _count; i++)
+            {
+                if (_appointments[i] is SpecialistAppointment)
+                {
+                    count++;
+                }
+            }
+            Appointment[] result = new Appointment[count];
+            int index = 0;
+            for (int i = 0; i < _count; i++)
+            {
+                if (_appointments[i] is SpecialistAppointment)
+                {
+                    result[index] = _appointments[i];
+                    index++;
+                }
+            }
+            return result;
+        }
+
+        public Appointment[] GetRegular()
+        {
+            int count = 0;
+            for (int i = 0; i < _count; i++)
+            {
+                if (_appointments[i] is RegularAppointment)
+                {
+                    count++;
+                }
+            }
+            Appointment[] result = new Appointment[count];
+            int index = 0;
+            for (int i = 0; i < _count; i++)
+            {
+                if (_appointments[i] is RegularAppointment)
+                {
+                    result[index] = _appointments[i];
+                    index++;
+                }
+            }
+            return result;
+        }
+
         public static int CancelAll(ICancellable[] items, string reason = "")
         {
             if (items == null)
             {
                 return 0;
             }
-
             int cancelledCount = 0;
             for (int i = 0; i < items.Length; i++)
             {
@@ -47,35 +155,6 @@ namespace ClinicApp.Managers
                 }
             }
             return cancelledCount;
-        }
-
-        public Appointment? Book(int patientId, int doctorId, DateTime scheduledAt, int durationMinutes = 30)
-        {
-            if (_count >= MaxAppointments)
-            {
-                Console.WriteLine("Неможливо створити запис: ліміт досягнуто.");
-                return null;
-            }
-
-            var patient = _patients.FindById(patientId);
-            if (patient == null)
-            {
-                Console.WriteLine($"Пацієнта з ID #{patientId} не знайдено.");
-                return null;
-            }
-
-            var doctor = _doctors.FindById(doctorId);
-            if (doctor == null)
-            {
-                Console.WriteLine($"Лікаря з ID #{doctorId} не знайдено.");
-                return null;
-            }
-
-            Appointment app = new Appointment(patientId, doctorId, scheduledAt, durationMinutes);
-            _appointments[_count] = app;
-            _count++;
-            Console.WriteLine($"Запис [{app.Id}] створено: {patient.FullName} -> {doctor.FullName} о {scheduledAt:dd.MM.yyyy HH:mm}");
-            return app;
         }
 
         public Appointment? FindById(int id)
@@ -110,7 +189,6 @@ namespace ClinicApp.Managers
                     matchCount++;
                 }
             }
-
             Appointment[] result = new Appointment[matchCount];
             int index = 0;
             for (int i = 0; i < _count; i++)
@@ -134,7 +212,6 @@ namespace ClinicApp.Managers
                     matchCount++;
                 }
             }
-
             Appointment[] result = new Appointment[matchCount];
             int index = 0;
             for (int i = 0; i < _count; i++)
@@ -172,6 +249,29 @@ namespace ClinicApp.Managers
             return result;
         }
 
+        public void DisplayAppointment(Appointment app)
+        {
+            if (app == null) return;
+            var patient = _patients.FindById(app.PatientId);
+            var doctor = _doctors.FindById(app.DoctorId);
+
+            string patientName = patient != null ? patient.FullName : $"Пацієнт #{app.PatientId}";
+            string doctorName = doctor != null ? doctor.FullName : $"Лікар #{app.DoctorId}";
+
+            Console.WriteLine($"[{app.Id}] {app.GetDescription()} | {patientName} -> {doctorName} | {app.ScheduledAt:dd.MM.yyyy HH:mm}-{app.EndsAt:HH:mm} | {app.Status} | {app.GetCost():F2} грн");
+        }
+        public void DisplayAppointments(Appointment[] apps)
+        {
+            if (apps == null || apps.Length == 0)
+            {
+                Console.WriteLine("Записів не знайдено.");
+                return;
+            }
+            for (int i = 0; i < apps.Length; i++)
+            {
+                DisplayAppointment(apps[i]);
+            }
+        }
         public void DisplayAll()
         {
             if (_count == 0)
@@ -181,7 +281,7 @@ namespace ClinicApp.Managers
             }
             for (int i = 0; i < _count; i++)
             {
-                Console.WriteLine(_appointments[i]);
+                DisplayAppointment(_appointments[i]);
             }
         }
     }

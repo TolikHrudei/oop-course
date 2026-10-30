@@ -16,11 +16,9 @@ class Program
         CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
         CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
         Console.OutputEncoding = System.Text.Encoding.UTF8;
-
         Clinic clinic = new Clinic("Медична Клініка");
-
         SeedInitialData(clinic);
-
+        DemonstrateOverrideVsNew();
         bool running = true;
         while (running)
         {
@@ -68,6 +66,15 @@ class Program
         }
     }
 
+   static void DemonstrateOverrideVsNew()
+    {
+        Console.WriteLine("\n== new vs override ==");
+        UrgentAppointment urgent = new UrgentAppointment(1, 1, DateTime.Today, "тест");
+        Appointment app = urgent;
+
+        Console.WriteLine($"Через Appointment:       {app.GetDescription()} | пріоритет {app.GetPriority()}");
+        Console.WriteLine($"Через UrgentAppointment: {urgent.GetDescription()} | пріоритет {urgent.GetPriority()}");
+    }
     static void SeedInitialData(Clinic clinic)
     {
         clinic.Patients.Add(new Patient("Іван", "Петренко", new DateTime(1985, 5, 15), BloodType.APositive, "0501234567"));
@@ -83,18 +90,15 @@ class Program
         clinic.Doctors.Add(d2);
 
         clinic.Appointments.Book(1, 1, DateTime.Today.AddDays(1).AddHours(10), 30);
-        clinic.Appointments.Book(1, 2, DateTime.Today.AddDays(2).AddHours(11), 45);
-        clinic.Appointments.Book(1, 1, DateTime.Today.AddDays(3).AddHours(14), 20);
-
+        clinic.Appointments.BookUrgent(1, 2, DateTime.Today.AddDays(2).AddHours(11), "біль у грудях", 30);
+        clinic.Appointments.BookSpecialist(1, 1, DateTime.Today.AddDays(3).AddHours(14), "кардіологія", 45);
         clinic.MedicalRecords.Add(new Diagnosis(1, 1, DateTime.Today.AddDays(-30), "I10", "Гіпертонічна хвороба", true));
         clinic.MedicalRecords.Add(new Diagnosis(1, 2, DateTime.Today.AddDays(-5), "J06.9", "Гострий ринофарингіт", false));
         clinic.MedicalRecords.Add(new LabResult(1, 2, DateTime.Today, "Гемоглобін", 145, "г/л", "120–160", true));
         clinic.MedicalRecords.Add(new LabResult(1, 1, DateTime.Today, "Холестерин", 6.2, "ммоль/л", "< 5.2", false));
         clinic.MedicalRecords.Add(new Prescription(1, 1, DateTime.Today.AddDays(-5), "Лізиноприл", "10 мг", 30, "1 раз на добу вранці"));
-
         clinic.MedicalRecords.Add(new Prescription(2, 2, DateTime.Today.AddDays(-40), "Амоксицилін", "500 мг", 10, "3 рази на добу"));
         clinic.MedicalRecords.Add(new Diagnosis(2, 2, DateTime.Today.AddDays(-15), "M54.5", "Біль у попереку", false));
-
         clinic.MedicalRecords.Add(new LabResult(3, 2, DateTime.Today, "Загальний аналіз крові", 5.0, "10^9/л", "4.0–9.0", true));
     }
 
@@ -103,7 +107,6 @@ class Program
         Console.WriteLine("\n--- Пацієнти ---");
         clinic.Patients.DisplayAll();
     }
-
     static void RunDoctorsMenu(Clinic clinic)
     {
         bool inMenu = true;
@@ -133,7 +136,6 @@ class Program
             }
         }
     }
-
     static void ShowDoctorAvailableSlotsMenu(Clinic clinic)
     {
         Console.Write("ID лікаря: ");
@@ -148,7 +150,6 @@ class Program
             Console.WriteLine("Лікаря не знайдено");
             return;
         }
-
         ISchedulable schedulable = doctor;
 
         Console.Write("Дата (dd.MM.yyyy): ");
@@ -158,7 +159,6 @@ class Program
             Console.WriteLine("Некоректний формат дати.");
             return;
         }
-
         Console.Write("Скільки слотів: ");
         if (!int.TryParse(Console.ReadLine(), out int slotCount))
         {
@@ -191,6 +191,7 @@ class Program
             Console.WriteLine("\n--- Записи ---");
             Console.WriteLine("1 — Розклад на сьогодні");
             Console.WriteLine("8 — Скасувати всі записи пацієнта");
+            Console.WriteLine("9 — За типом прийому");
             Console.WriteLine("0 — Назад");
             Console.Write("Оберіть: ");
 
@@ -203,6 +204,9 @@ class Program
                 case "8":
                     CancelAllPatientAppointmentsMenu(clinic);
                     break;
+                case "9":
+                    ShowAppointmentsByTypeMenu(clinic);
+                    break;
                 case "0":
                     inMenu = false;
                     break;
@@ -211,6 +215,31 @@ class Program
                     break;
             }
         }
+    }
+
+    static void ShowAppointmentsByTypeMenu(Clinic clinic)
+    {
+        Console.WriteLine("1. Термінові");
+        Console.WriteLine("2. Консультації спеціаліста");
+        Console.WriteLine("3. Звичайні");
+        Console.Write("Оберіть: ");
+
+        string choice = Console.ReadLine() ?? "";
+        Appointment[] result = choice switch
+        {
+            "1" => clinic.Appointments.GetUrgent(),
+            "2" => clinic.Appointments.GetSpecialist(),
+            "3" => clinic.Appointments.GetRegular(),
+            _ => new Appointment[0]
+        };
+
+        if (choice != "1" && choice != "2" && choice != "3")
+        {
+            Console.WriteLine("Невідома команда.");
+            return;
+        }
+
+        clinic.Appointments.DisplayAppointments(result);
     }
 
     static void CancelAllPatientAppointmentsMenu(Clinic clinic)
@@ -554,7 +583,6 @@ class Program
             }
         }
     }
-
     static void ShowPatientDebtMenu(Clinic clinic)
     {
         Console.Write("ID пацієнта: ");
@@ -570,7 +598,6 @@ class Program
         {
             Console.WriteLine($"Неоплачені записи пацієнта #{patientId}:");
         }
-
         clinic.Billing.DisplayUnpaid(unpaid);
         Console.WriteLine($"Борг: {debt:F2} грн");
     }
@@ -588,7 +615,6 @@ class Program
         {
             return;
         }
-
         bool success = clinic.Billing.PayAppointment(appointmentId);
         if (success)
         {
