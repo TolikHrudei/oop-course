@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ClinicApp.Models
 {
     public class RegularAppointment : Appointment
     {
-        public RegularAppointment(int patientId, int doctorId, DateTime scheduledAt, int durationMinutes = 30)
-            : base(patientId, doctorId, scheduledAt, durationMinutes)
+        public RegularAppointment(int patientId, int doctorId, DateTime scheduledAt, int durationMinutes = 30, decimal discountMultiplier = 1.0m)
+            : base(patientId, doctorId, scheduledAt, durationMinutes, discountMultiplier)
         {
         }
         public override string GetDescription()

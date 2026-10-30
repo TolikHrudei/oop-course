@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ClinicApp.Models
 {
     public class UrgentAppointment : Appointment
     {
         public string UrgencyNote { get; }
-        public UrgentAppointment(int patientId, int doctorId, DateTime scheduledAt, string urgencyNote = "", int durationMinutes = 30)
-            : base(patientId, doctorId, scheduledAt, durationMinutes)
+
+        public UrgentAppointment(int patientId, int doctorId, DateTime scheduledAt, string urgencyNote = "", int durationMinutes = 30, decimal discountMultiplier = 1.0m)
+            : base(patientId, doctorId, scheduledAt, durationMinutes, discountMultiplier)
         {
             UrgencyNote = urgencyNote ?? "";
         }
@@ -24,6 +23,7 @@ namespace ClinicApp.Models
             }
             return $"Терміновий ({UrgencyNote})";
         }
+
         public new int GetPriority()
         {
             return 1;
