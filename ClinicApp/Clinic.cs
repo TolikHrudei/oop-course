@@ -1,4 +1,5 @@
 ﻿using ClinicApp.Managers;
+using ClinicApp.Models;
 using System;
 
 namespace ClinicApp
@@ -11,6 +12,8 @@ namespace ClinicApp
         public AppointmentManager Appointments { get; }
         public MedicalRecordManager MedicalRecords { get; }
         public BillingManager Billing { get; }
+        public WaitingQueue<Patient> WaitingRoom { get; }
+
         public Clinic(string name)
         {
             Name = name;
@@ -19,6 +22,7 @@ namespace ClinicApp
             Appointments = new AppointmentManager(Patients, Doctors);
             MedicalRecords = new MedicalRecordManager();
             Billing = new BillingManager(Appointments);
+            WaitingRoom = new WaitingQueue<Patient>();
         }
         public void DisplaySchedule(DateTime date)
         {
@@ -30,17 +34,7 @@ namespace ClinicApp
                 return;
             }
 
-            for (int i = 0; i < apps.Length; i++)
-            {
-                var app = apps[i];
-                var patient = Patients.FindById(app.PatientId);
-                var doctor = Doctors.FindById(app.DoctorId);
-
-                string patientName = patient != null ? patient.FullName : $"Пацієнт #{app.PatientId}";
-                string doctorName = doctor != null ? doctor.FullName : $"Лікар #{app.DoctorId}";
-
-                Console.WriteLine($"[{app.Id}] {patientName} -> {doctorName} | {app.ScheduledAt:dd.MM.yyyy HH:mm}-{app.EndsAt:HH:mm} | {app.Status}");
-            }
+            Appointments.DisplayAppointments(apps);
         }
         public void GenerateReport()
         {

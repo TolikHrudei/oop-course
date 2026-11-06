@@ -5,7 +5,7 @@ using System;
 
 namespace ClinicApp.Models
 {
-    public class Doctor : ISchedulable
+    public class Doctor : ISchedulable, IIdentifiable
     {
         private static int _nextId = 1;
         private string _firstName = "";
@@ -13,7 +13,6 @@ namespace ClinicApp.Models
         private string _licenseNumber = "";
         private string _phone = "";
         public int Id { get; }
-
         public string FirstName
         {
             get { return _firstName; }
@@ -32,7 +31,9 @@ namespace ClinicApp.Models
                 _lastName = value;
             }
         }
+
         public Speciality Specialty { get; set; }
+
         public string LicenseNumber
         {
             get { return _licenseNumber; }
@@ -45,13 +46,13 @@ namespace ClinicApp.Models
                 _licenseNumber = value;
             }
         }
+
         public string Phone
         {
             get { return _phone; }
             set
             {
                 ClinicValidator.ValidatePhone(value);
-
                 if (value.StartsWith("+38"))
                 {
                     _phone = value.Substring(3);
@@ -62,7 +63,6 @@ namespace ClinicApp.Models
                 }
             }
         }
-
         public WorkSchedule Schedule { get; set; }
         public string FullName => FirstName + " " + LastName;
         public bool IsAvailableNow => Schedule.IsNow;
@@ -75,7 +75,6 @@ namespace ClinicApp.Models
         {
             return CanAcceptAt(at.Hour);
         }
-
         public DateTime[] GetAvailableSlots(DateTime date, int slotCount)
         {
             ClinicValidator.ValidatePositive(slotCount, nameof(slotCount));
@@ -88,9 +87,9 @@ namespace ClinicApp.Models
             {
                 slots[i] = startDate.AddHours(Schedule.Start + i);
             }
-
             return slots;
         }
+
         public Doctor(string firstName, string lastName, Speciality specialty, string licenseNumber, string phone)
         {
             FirstName = firstName;
@@ -99,24 +98,24 @@ namespace ClinicApp.Models
             LicenseNumber = licenseNumber;
             Phone = phone;
             Schedule = new WorkSchedule(8, 17);
-
             Id = _nextId;
             _nextId++;
         }
+
         public Doctor(string firstName, string lastName, Speciality specialty)
             : this(firstName, lastName, specialty, "Невідомо", "0000000000")
         {
         }
         public Doctor()
-           : this("Невідомий", "Лікар", Speciality.General)
+            : this("Невідомий", "Лікар", Speciality.General)
         {
         }
+
         public override string ToString()
         {
             string status = IsAvailableNow ? "доступний" : "не в робочий час";
             string specFormatted = ClinicFormatter.FormatSpeciality(Specialty);
             string phoneFormatted = ClinicFormatter.FormatPhone(Phone);
-
             return $"[{Id}] {FullName} | {specFormatted} | {LicenseNumber} | Тел. {phoneFormatted}, {Schedule} | {status}";
         }
     }
