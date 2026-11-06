@@ -16,9 +16,13 @@ class Program
         CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
         CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
         Console.OutputEncoding = System.Text.Encoding.UTF8;
+
         Clinic clinic = new Clinic("Медична Клініка");
+
         SeedInitialData(clinic);
+
         DemonstrateOverrideVsNew();
+
         bool running = true;
         while (running)
         {
@@ -30,7 +34,8 @@ class Program
             Console.WriteLine("║  3. Записи         – прийоми, скасування     ║");
             Console.WriteLine("║  4. Медична картка – діагнози, рецепти       ║");
             Console.WriteLine("║  5. Рахунки        – оплата, борги           ║");
-            Console.WriteLine("║  6. Звіт           – загальна статистика     ║");
+            Console.WriteLine("║  6. Черга          – очікування, прийом      ║");
+            Console.WriteLine("║  7. Звіт           – загальна статистика     ║");
             Console.WriteLine("║  0. Вийти                                    ║");
             Console.WriteLine("╚══════════════════════════════════════════════╝");
             Console.Write("Оберіть розділ: ");
@@ -54,6 +59,9 @@ class Program
                     RunBillingMenu(clinic);
                     break;
                 case "6":
+                    RunWaitingRoomMenu(clinic);
+                    break;
+                case "7":
                     clinic.GenerateReport();
                     break;
                 case "0":
@@ -75,6 +83,7 @@ class Program
         Console.WriteLine($"Через Appointment:       {app.GetDescription()} | пріоритет {app.GetPriority()}");
         Console.WriteLine($"Через UrgentAppointment: {urgent.GetDescription()} | пріоритет {urgent.GetPriority()}");
     }
+
     static void SeedInitialData(Clinic clinic)
     {
         clinic.Patients.Add(new Patient("Іван", "Петренко", new DateTime(1985, 5, 15), BloodType.APositive, "0501234567"));
@@ -92,13 +101,16 @@ class Program
         clinic.Appointments.Book(1, 1, DateTime.Today.AddDays(1).AddHours(10), 30);
         clinic.Appointments.BookUrgent(1, 2, DateTime.Today.AddDays(2).AddHours(11), "біль у грудях", 30);
         clinic.Appointments.BookSpecialist(1, 1, DateTime.Today.AddDays(3).AddHours(14), "кардіологія", 45);
+
         clinic.MedicalRecords.Add(new Diagnosis(1, 1, DateTime.Today.AddDays(-30), "I10", "Гіпертонічна хвороба", true));
         clinic.MedicalRecords.Add(new Diagnosis(1, 2, DateTime.Today.AddDays(-5), "J06.9", "Гострий ринофарингіт", false));
         clinic.MedicalRecords.Add(new LabResult(1, 2, DateTime.Today, "Гемоглобін", 145, "г/л", "120–160", true));
         clinic.MedicalRecords.Add(new LabResult(1, 1, DateTime.Today, "Холестерин", 6.2, "ммоль/л", "< 5.2", false));
         clinic.MedicalRecords.Add(new Prescription(1, 1, DateTime.Today.AddDays(-5), "Лізиноприл", "10 мг", 30, "1 раз на добу вранці"));
+
         clinic.MedicalRecords.Add(new Prescription(2, 2, DateTime.Today.AddDays(-40), "Амоксицилін", "500 мг", 10, "3 рази на добу"));
         clinic.MedicalRecords.Add(new Diagnosis(2, 2, DateTime.Today.AddDays(-15), "M54.5", "Біль у попереку", false));
+
         clinic.MedicalRecords.Add(new LabResult(3, 2, DateTime.Today, "Загальний аналіз крові", 5.0, "10^9/л", "4.0–9.0", true));
     }
 
@@ -107,6 +119,7 @@ class Program
         Console.WriteLine("\n--- Пацієнти ---");
         clinic.Patients.DisplayAll();
     }
+
     static void RunDoctorsMenu(Clinic clinic)
     {
         bool inMenu = true;
@@ -136,6 +149,7 @@ class Program
             }
         }
     }
+
     static void ShowDoctorAvailableSlotsMenu(Clinic clinic)
     {
         Console.Write("ID лікаря: ");
@@ -150,6 +164,7 @@ class Program
             Console.WriteLine("Лікаря не знайдено");
             return;
         }
+
         ISchedulable schedulable = doctor;
 
         Console.Write("Дата (dd.MM.yyyy): ");
@@ -159,6 +174,7 @@ class Program
             Console.WriteLine("Некоректний формат дати.");
             return;
         }
+
         Console.Write("Скільки слотів: ");
         if (!int.TryParse(Console.ReadLine(), out int slotCount))
         {
@@ -322,7 +338,6 @@ class Program
 
         clinic.MedicalRecords.DisplayPatientSummary(patientId);
     }
-
     static void ShowAllPatientRecordsMenu(Clinic clinic)
     {
         Console.Write("ID пацієнта: ");
@@ -382,7 +397,6 @@ class Program
             Console.WriteLine("Некоректне значення.");
             return;
         }
-
         bool isChronic = (chronicVal == 1);
 
         try
@@ -414,7 +428,6 @@ class Program
             Console.WriteLine("Пацієнта з таким ID не знайдено.");
             return;
         }
-
         Console.Write("ID лікаря: ");
         if (!int.TryParse(Console.ReadLine(), out int doctorId))
         {
@@ -467,7 +480,6 @@ class Program
             Console.WriteLine($"Помилка: {e.Message}");
         }
     }
-
     static void AddPrescriptionMenu(Clinic clinic)
     {
         Console.Write("ID пацієнта: ");
@@ -495,7 +507,6 @@ class Program
             Console.WriteLine("Лікаря з таким ID не знайдено.");
             return;
         }
-
         Console.Write("Препарат: ");
         string medicationName = Console.ReadLine() ?? "";
 
@@ -545,7 +556,6 @@ class Program
         var records = clinic.MedicalRecords.GetByDoctor(doctorId);
         clinic.MedicalRecords.DisplayList(records);
     }
-
     static void RunBillingMenu(Clinic clinic)
     {
         bool inMenu = true;
@@ -590,7 +600,6 @@ class Program
         {
             return;
         }
-
         IPayable[] unpaid = clinic.Billing.GetUnpaidByPatient(patientId);
         decimal debt = clinic.Billing.GetPatientDebt(patientId);
 
@@ -598,6 +607,7 @@ class Program
         {
             Console.WriteLine($"Неоплачені записи пацієнта #{patientId}:");
         }
+
         clinic.Billing.DisplayUnpaid(unpaid);
         Console.WriteLine($"Борг: {debt:F2} грн");
     }
@@ -615,6 +625,7 @@ class Program
         {
             return;
         }
+
         bool success = clinic.Billing.PayAppointment(appointmentId);
         if (success)
         {
@@ -630,5 +641,100 @@ class Program
     {
         decimal totalDebt = clinic.Billing.GetTotalDebt();
         Console.WriteLine($"Загальний борг по клініці: {totalDebt:F2} грн");
+    }
+
+    static void RunWaitingRoomMenu(Clinic clinic)
+    {
+        bool inMenu = true;
+        while (inMenu)
+        {
+            Console.WriteLine("\n— Черга ─────────────────────────");
+            Console.WriteLine("1. Додати пацієнта до черги");
+            Console.WriteLine("2. Прийняти першого");
+            Console.WriteLine("3. Хто перший?");
+            Console.WriteLine("4. Переглянути всю чергу");
+            Console.WriteLine("0. Назад");
+            Console.Write("Оберіть: ");
+
+            string choice = Console.ReadLine() ?? "";
+            switch (choice)
+            {
+                case "1":
+                    AddPatientToQueueMenu(clinic);
+                    break;
+                case "2":
+                    AcceptFirstPatientMenu(clinic);
+                    break;
+                case "3":
+                    ShowFirstPatientMenu(clinic);
+                    break;
+                case "4":
+                    ShowFullQueueMenu(clinic);
+                    break;
+                case "0":
+                    inMenu = false;
+                    break;
+                default:
+                    Console.WriteLine("Невідома команда.");
+                    break;
+            }
+        }
+    }
+
+    static void AddPatientToQueueMenu(Clinic clinic)
+    {
+        Console.Write("ID пацієнта: ");
+        if (!int.TryParse(Console.ReadLine(), out int patientId))
+        {
+            return;
+        }
+
+        Patient? patient = clinic.Patients.FindById(patientId);
+        if (patient == null)
+        {
+            Console.WriteLine("Пацієнта не знайдено");
+            return;
+        }
+
+        clinic.WaitingRoom.Enqueue(patient);
+        Console.WriteLine($"Пацієнта {patient.FullName} додано до черги.");
+    }
+    static void AcceptFirstPatientMenu(Clinic clinic)
+    {
+        try
+        {
+            Patient p = clinic.WaitingRoom.Dequeue();
+            Console.WriteLine($"Прийнято: {p.FullName}. У черзі лишилось: {clinic.WaitingRoom.Count}");
+        }
+        catch (InvalidOperationException ex)
+        {
+            Console.WriteLine($"Помилка: {ex.Message}");
+        }
+    }
+    static void ShowFirstPatientMenu(Clinic clinic)
+    {
+        try
+        {
+            Patient p = clinic.WaitingRoom.Peek();
+            Console.WriteLine($"Перший у черзі: {p.FullName}");
+        }
+        catch (InvalidOperationException ex)
+        {
+            Console.WriteLine($"Помилка: {ex.Message}");
+        }
+    }
+    static void ShowFullQueueMenu(Clinic clinic)
+    {
+        Patient[] queue = clinic.WaitingRoom.ToArray();
+        if (queue.Length == 0)
+        {
+            Console.WriteLine("Черга порожня.");
+            return;
+        }
+
+        for (int i = 0; i < queue.Length; i++)
+        {
+            Console.WriteLine($"{i + 1}. {queue[i].FullName}");
+        }
     }
 }
