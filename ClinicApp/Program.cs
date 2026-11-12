@@ -1,9 +1,11 @@
 ﻿using ClinicApp;
+using ClinicApp.Comparators;
 using ClinicApp.Enums;
 using ClinicApp.Interfaces;
 using ClinicApp.Managers;
 using ClinicApp.Models;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 
@@ -21,8 +23,6 @@ class Program
 
         SeedInitialData(clinic);
 
-        DemonstrateOverrideVsNew();
-
         bool running = true;
         while (running)
         {
@@ -36,6 +36,7 @@ class Program
             Console.WriteLine("║  5. Рахунки        – оплата, борги           ║");
             Console.WriteLine("║  6. Черга          – очікування, прийом      ║");
             Console.WriteLine("║  7. Звіт           – загальна статистика     ║");
+            Console.WriteLine("║  8. Аналітика      – лікарі та пацієнти      ║");
             Console.WriteLine("║  0. Вийти                                    ║");
             Console.WriteLine("╚══════════════════════════════════════════════╝");
             Console.Write("Оберіть розділ: ");
@@ -64,6 +65,9 @@ class Program
                 case "7":
                     clinic.GenerateReport();
                     break;
+                case "8":
+                    RunAnalyticsMenu(clinic);
+                    break;
                 case "0":
                     running = false;
                     break;
@@ -74,44 +78,113 @@ class Program
         }
     }
 
-   static void DemonstrateOverrideVsNew()
-    {
-        Console.WriteLine("\n== new vs override ==");
-        UrgentAppointment urgent = new UrgentAppointment(1, 1, DateTime.Today, "тест");
-        Appointment app = urgent;
-
-        Console.WriteLine($"Через Appointment:       {app.GetDescription()} | пріоритет {app.GetPriority()}");
-        Console.WriteLine($"Через UrgentAppointment: {urgent.GetDescription()} | пріоритет {urgent.GetPriority()}");
-    }
-
     static void SeedInitialData(Clinic clinic)
     {
         clinic.Patients.Add(new Patient("Іван", "Петренко", new DateTime(1985, 5, 15), BloodType.APositive, "0501234567"));
         clinic.Patients.Add(new Patient("Олена", "Коваль", new DateTime(1992, 8, 20), BloodType.ONegative, "0672345678"));
         clinic.Patients.Add(new Patient("Василь", "Сидоренко", new DateTime(1978, 12, 10), BloodType.BPositive, "0933456789"));
+        clinic.Patients.Add(new Patient("Максим", "Бойко", new DateTime(1995, 2, 28), BloodType.APositive, "0631234567"));
 
         Doctor d1 = new Doctor("Олег", "Сидоренко", Speciality.Cardiology, "LIC-001", "0441234567");
         d1.Schedule = new WorkSchedule(8, 16);
         clinic.Doctors.Add(d1);
 
-        Doctor d2 = new Doctor("Марія", "Іванова", Speciality.General, "LIC-002", "0442345678");
+        Doctor d2 = new Doctor("Наталія", "Мороз", Speciality.General, "LIC-002", "0442345678");
         d2.Schedule = new WorkSchedule(9, 17);
         clinic.Doctors.Add(d2);
 
-        clinic.Appointments.Book(1, 1, DateTime.Today.AddDays(1).AddHours(10), 30);
-        clinic.Appointments.BookUrgent(1, 2, DateTime.Today.AddDays(2).AddHours(11), "біль у грудях", 30);
-        clinic.Appointments.BookSpecialist(1, 1, DateTime.Today.AddDays(3).AddHours(14), "кардіологія", 45);
+        clinic.Appointments.Book(1, 1, DateTime.Today.AddDays(-2).AddHours(10), 30);
+        clinic.Appointments.Book(1, 1, DateTime.Today.AddDays(-1).AddHours(10), 30);
+        clinic.Appointments.BookUrgent(2, 2, DateTime.Today.AddDays(-1).AddHours(11), "біль у горлі", 30);
 
         clinic.MedicalRecords.Add(new Diagnosis(1, 1, DateTime.Today.AddDays(-30), "I10", "Гіпертонічна хвороба", true));
         clinic.MedicalRecords.Add(new Diagnosis(1, 2, DateTime.Today.AddDays(-5), "J06.9", "Гострий ринофарингіт", false));
         clinic.MedicalRecords.Add(new LabResult(1, 2, DateTime.Today, "Гемоглобін", 145, "г/л", "120–160", true));
         clinic.MedicalRecords.Add(new LabResult(1, 1, DateTime.Today, "Холестерин", 6.2, "ммоль/л", "< 5.2", false));
         clinic.MedicalRecords.Add(new Prescription(1, 1, DateTime.Today.AddDays(-5), "Лізиноприл", "10 мг", 30, "1 раз на добу вранці"));
-
         clinic.MedicalRecords.Add(new Prescription(2, 2, DateTime.Today.AddDays(-40), "Амоксицилін", "500 мг", 10, "3 рази на добу"));
         clinic.MedicalRecords.Add(new Diagnosis(2, 2, DateTime.Today.AddDays(-15), "M54.5", "Біль у попереку", false));
-
         clinic.MedicalRecords.Add(new LabResult(3, 2, DateTime.Today, "Загальний аналіз крові", 5.0, "10^9/л", "4.0–9.0", true));
+    }
+
+    static void RunAnalyticsMenu(Clinic clinic)
+    {
+        bool inMenu = true;
+        while (inMenu)
+        {
+            Console.WriteLine("\n— Аналітика ─────────────────────────");
+            Console.WriteLine("1. Лікарі за навантаженням");
+            Console.WriteLine("2. Лікарі за виручкою");
+            Console.WriteLine("3. Лікарі за іменем");
+            Console.WriteLine("4. Пацієнти за кількістю візитів");
+            Console.WriteLine("5. Пацієнти за витратами");
+            Console.WriteLine("0. Назад");
+            Console.Write("Оберіть: ");
+
+            string choice = Console.ReadLine() ?? "";
+            switch (choice)
+            {
+                case "1":
+                    var docs1 = CollectDoctorStats(clinic);
+                    docs1.Sort();
+                    DisplayList(docs1);
+                    break;
+                case "2":
+                    var docs2 = CollectDoctorStats(clinic);
+                    docs2.Sort(new DoctorStatsByRevenue());
+                    DisplayList(docs2);
+                    break;
+                case "3":
+                    var docs3 = CollectDoctorStats(clinic);
+                    docs3.Sort(new DoctorStatsByName());
+                    DisplayList(docs3);
+                    break;
+                case "4":
+                    var pats1 = CollectPatientStats(clinic);
+                    pats1.Sort();
+                    DisplayList(pats1);
+                    break;
+                case "5":
+                    var pats2 = CollectPatientStats(clinic);
+                    pats2.Sort(new PatientStatsBySpent());
+                    DisplayList(pats2);
+                    break;
+                case "0":
+                    inMenu = false;
+                    break;
+                default:
+                    Console.WriteLine("Невідома команда.");
+                    break;
+            }
+        }
+    }
+
+    static List<DoctorStats> CollectDoctorStats(Clinic clinic)
+    {
+        List<DoctorStats> list = new List<DoctorStats>();
+        foreach (var stat in clinic.Analytics.ComputeDoctorStats())
+        {
+            list.Add(stat);
+        }
+        return list;
+    }
+
+    static List<PatientStats> CollectPatientStats(Clinic clinic)
+    {
+        List<PatientStats> list = new List<PatientStats>();
+        foreach (var stat in clinic.Analytics.ComputePatientStats())
+        {
+            list.Add(stat);
+        }
+        return list;
+    }
+
+    static void DisplayList<T>(List<T> list)
+    {
+        for (int i = 0; i < list.Count; i++)
+        {
+            Console.WriteLine(list[i]);
+        }
     }
 
     static void RunPatientsMenu(Clinic clinic)
@@ -338,6 +411,7 @@ class Program
 
         clinic.MedicalRecords.DisplayPatientSummary(patientId);
     }
+
     static void ShowAllPatientRecordsMenu(Clinic clinic)
     {
         Console.Write("ID пацієнта: ");
@@ -397,6 +471,7 @@ class Program
             Console.WriteLine("Некоректне значення.");
             return;
         }
+
         bool isChronic = (chronicVal == 1);
 
         try
@@ -428,6 +503,7 @@ class Program
             Console.WriteLine("Пацієнта з таким ID не знайдено.");
             return;
         }
+
         Console.Write("ID лікаря: ");
         if (!int.TryParse(Console.ReadLine(), out int doctorId))
         {
@@ -480,6 +556,7 @@ class Program
             Console.WriteLine($"Помилка: {e.Message}");
         }
     }
+
     static void AddPrescriptionMenu(Clinic clinic)
     {
         Console.Write("ID пацієнта: ");
@@ -507,6 +584,7 @@ class Program
             Console.WriteLine("Лікаря з таким ID не знайдено.");
             return;
         }
+
         Console.Write("Препарат: ");
         string medicationName = Console.ReadLine() ?? "";
 
@@ -556,6 +634,7 @@ class Program
         var records = clinic.MedicalRecords.GetByDoctor(doctorId);
         clinic.MedicalRecords.DisplayList(records);
     }
+
     static void RunBillingMenu(Clinic clinic)
     {
         bool inMenu = true;
@@ -593,6 +672,7 @@ class Program
             }
         }
     }
+
     static void ShowPatientDebtMenu(Clinic clinic)
     {
         Console.Write("ID пацієнта: ");
@@ -600,6 +680,7 @@ class Program
         {
             return;
         }
+
         IPayable[] unpaid = clinic.Billing.GetUnpaidByPatient(patientId);
         decimal debt = clinic.Billing.GetPatientDebt(patientId);
 
@@ -699,6 +780,7 @@ class Program
         clinic.WaitingRoom.Enqueue(patient);
         Console.WriteLine($"Пацієнта {patient.FullName} додано до черги.");
     }
+
     static void AcceptFirstPatientMenu(Clinic clinic)
     {
         try
@@ -711,6 +793,7 @@ class Program
             Console.WriteLine($"Помилка: {ex.Message}");
         }
     }
+
     static void ShowFirstPatientMenu(Clinic clinic)
     {
         try
@@ -723,6 +806,7 @@ class Program
             Console.WriteLine($"Помилка: {ex.Message}");
         }
     }
+
     static void ShowFullQueueMenu(Clinic clinic)
     {
         Patient[] queue = clinic.WaitingRoom.ToArray();
