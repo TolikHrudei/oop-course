@@ -19,11 +19,19 @@ class Program
         CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
         CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
         Console.OutputEncoding = System.Text.Encoding.UTF8;
-
         Clinic clinic = new Clinic("Медична Клініка");
-
         SeedInitialData(clinic);
-
+        if (clinic.Session.Exists())
+        {
+            Console.Write("Знайдено збережену сесію. Завантажити? (y/n): ");
+            string loadAnswer = (Console.ReadLine() ?? "").Trim().ToLower();
+            if (loadAnswer == "y")
+            {
+                int loaded = clinic.Session.Load(clinic);
+                Console.WriteLine($"Завантажено {loaded} пацієнтів.");
+                clinic.Logger.LogInfo($"Завантажено сесію: додано {loaded} пацієнтів.");
+            }
+        }
         bool running = true;
         while (running)
         {
@@ -43,7 +51,6 @@ class Program
             Console.WriteLine("║  0. Вийти                                    ║");
             Console.WriteLine("╚══════════════════════════════════════════════╝");
             Console.Write("Оберіть розділ: ");
-
             string choice = Console.ReadLine() ?? "";
             switch (choice)
             {
@@ -78,6 +85,14 @@ class Program
                     RunFilesMenu(clinic);
                     break;
                 case "0":
+                    Console.Write("Зберегти сесію? (y/n): ");
+                    string saveAnswer = (Console.ReadLine() ?? "").Trim().ToLower();
+                    if (saveAnswer == "y")
+                    {
+                        clinic.Session.Save(clinic);
+                        Console.WriteLine("Сесію збережено.");
+                        clinic.Logger.LogInfo("Сесію збережено у session.dat.");
+                    }
                     running = false;
                     break;
                 default:

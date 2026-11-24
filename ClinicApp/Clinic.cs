@@ -18,6 +18,7 @@ namespace ClinicApp
         public TreatmentPlanManager TreatmentPlans { get; }
         public ClinicLogger Logger { get; }
         public ClinicExporter Exporter { get; }
+        public SessionManager Session { get; }
         public Clinic(string name)
         {
             Name = name;
@@ -31,6 +32,7 @@ namespace ClinicApp
             TreatmentPlans = new TreatmentPlanManager();
             Logger = new ClinicLogger();
             Exporter = new ClinicExporter(this);
+            Session = new SessionManager();
         }
         public void DisplaySchedule(DateTime date)
         {
@@ -41,6 +43,7 @@ namespace ClinicApp
                 Console.WriteLine("На цю дату записів немає.");
                 return;
             }
+
             Appointments.DisplayAppointments(apps);
         }
         public void GenerateReport()
