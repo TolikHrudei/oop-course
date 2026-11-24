@@ -141,6 +141,7 @@ class Program
             Console.WriteLine("1. Останні рядки лога");
             Console.WriteLine("2. Очистити лог");
             Console.WriteLine("3. Експортувати всі звіти");
+            Console.WriteLine("4. Імпорт пацієнтів з CSV");
             Console.WriteLine("0. Назад");
             Console.Write("Оберіть: ");
 
@@ -157,6 +158,9 @@ class Program
                 case "3":
                     ExportAllReportsMenu(clinic);
                     break;
+                case "4":
+                    ImportPatientsCsvMenu(clinic);
+                    break;
                 case "0":
                     inMenu = false;
                     break;
@@ -165,6 +169,14 @@ class Program
                     break;
             }
         }
+    }
+
+    static void ImportPatientsCsvMenu(Clinic clinic)
+    {
+        Console.Write("Шлях до CSV-файлу: ");
+        string filePath = Console.ReadLine() ?? "";
+        ImportResult result = CsvImporter.ImportPatients(clinic, filePath);
+        result.Print();
     }
 
     static void ExportAllReportsMenu(Clinic clinic)
