@@ -17,7 +17,7 @@ namespace ClinicApp
         public AnalyticsManager Analytics { get; }
         public TreatmentPlanManager TreatmentPlans { get; }
         public ClinicLogger Logger { get; }
-
+        public ClinicExporter Exporter { get; }
         public Clinic(string name)
         {
             Name = name;
@@ -30,8 +30,8 @@ namespace ClinicApp
             Analytics = new AnalyticsManager(Appointments, Doctors, Patients);
             TreatmentPlans = new TreatmentPlanManager();
             Logger = new ClinicLogger();
+            Exporter = new ClinicExporter(this);
         }
-
         public void DisplaySchedule(DateTime date)
         {
             Console.WriteLine($"\n=== Розклад на {date:dd.MM.yyyy} ===");
@@ -41,10 +41,8 @@ namespace ClinicApp
                 Console.WriteLine("На цю дату записів немає.");
                 return;
             }
-
             Appointments.DisplayAppointments(apps);
         }
-
         public void GenerateReport()
         {
             Console.WriteLine("\n┌────────────────────────────────────────┐");

@@ -140,6 +140,7 @@ class Program
             Console.WriteLine("\n— Файли ────────────────────────────");
             Console.WriteLine("1. Останні рядки лога");
             Console.WriteLine("2. Очистити лог");
+            Console.WriteLine("3. Експортувати всі звіти");
             Console.WriteLine("0. Назад");
             Console.Write("Оберіть: ");
 
@@ -153,6 +154,9 @@ class Program
                     clinic.Logger.Clear();
                     Console.WriteLine("Лог очищено.");
                     break;
+                case "3":
+                    ExportAllReportsMenu(clinic);
+                    break;
                 case "0":
                     inMenu = false;
                     break;
@@ -161,6 +165,17 @@ class Program
                     break;
             }
         }
+    }
+
+    static void ExportAllReportsMenu(Clinic clinic)
+    {
+        string[] paths = clinic.Exporter.ExportAll();
+        Console.WriteLine("Експортовано файли:");
+        for (int i = 0; i < paths.Length; i++)
+        {
+            Console.WriteLine($"  {paths[i]}");
+        }
+        clinic.Logger.LogInfo("Експортовано всі звіти.");
     }
 
     static void ShowLastLogLinesMenu(Clinic clinic)
