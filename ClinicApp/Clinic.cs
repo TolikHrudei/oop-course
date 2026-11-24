@@ -33,6 +33,18 @@ namespace ClinicApp
             Logger = new ClinicLogger();
             Exporter = new ClinicExporter(this);
             Session = new SessionManager();
+
+            SubscribeEvents();
+        }
+        private void SubscribeEvents()
+        {
+            Patients.PatientAdded += Logger.OnPatientAdded;
+            Appointments.AppointmentBooked += Logger.OnAppointmentBooked;
+            Appointments.AppointmentCancelled += Logger.OnAppointmentCancelled;
+            Appointments.AppointmentCompleted += Logger.OnAppointmentCompleted;
+            Appointments.UrgentAppointmentBooked += Logger.OnUrgentAppointmentBooked;
+            Billing.PaymentReceived += Logger.OnPaymentReceived;
+            TreatmentPlans.PlanCompleted += Logger.OnPlanCompleted;
         }
         public void DisplaySchedule(DateTime date)
         {

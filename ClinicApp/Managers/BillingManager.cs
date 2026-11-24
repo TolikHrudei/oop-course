@@ -1,68 +1,49 @@
-﻿using ClinicApp.Interfaces;
+﻿using ClinicApp.Events;
+using ClinicApp.Interfaces;
 using ClinicApp.Models;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace ClinicApp.Managers
 {
     public class BillingManager
     {
-        private readonly AppointmentManager _appointmentManager;
-        public BillingManager(AppointmentManager appointmentManager)
+        private readonly AppointmentManager _appointments;
+        public event EventHandler<PaymentEventArgs>? PaymentReceived;
+        public BillingManager(AppointmentManager appointments)
         {
-            _appointmentManager = appointmentManager;
-        }
-        private IPayable[] FilterUnpaid(Appointment[] source)
-        {
-            if (source == null)
-            {
-                return new IPayable[0];
-            }
-
-            int count = 0;
-            for (int i = 0; i < source.Length; i++)
-            {
-                if (source[i] != null && !source[i].IsPaid && !source[i].IsCancelled)
-                {
-                    count++;
-                }
-            }
-
-            IPayable[] result = new IPayable[count];
-            int index = 0;
-            for (int i = 0; i < source.Length; i++)
-            {
-                if (source[i] != null && !source[i].IsPaid && !source[i].IsCancelled)
-                {
-                    result[index] = source[i];
-                    index++;
-                }
-            }
-            return result;
-        }
-        public IPayable[] GetAllUnpaid()
-        {
-            Appointment[] all = _appointmentManager.GetAll();
-            return FilterUnpaid(all);
+            _appointments = appointments;
         }
         public IPayable[] GetUnpaidByPatient(int patientId)
         {
-            Appointment[] patientApps = _appointmentManager.GetByPatient(patientId);
-            return FilterUnpaid(patientApps);
-        }
+            Appointment[] patientApps = _appointments.GetByPatient(patientId);
+            List<IPayable> unpaid = new List<IPayable>();
 
-        public decimal GetTotalDebt()
-        {
-            IPayable[] unpaid = GetAllUnpaid();
-            decimal total = 0m;
-            for (int i = 0; i < unpaid.Length; i++)
+            for (int i = 0; i < patientApps.Length; i++)
             {
-                total += unpaid[i].GetCost();
+                if (!patientApps[i].IsCancelled && !patientApps[i].IsPaid)
+                {
+                    unpaid.Add(patientApps[i]);
+                }
             }
-            return total;
-        }
 
+            return unpaid.ToArray();
+        }
+        public IPayable[] GetAllUnpaid()
+        {
+            Appointment[] allApps = _appointments.GetAll();
+            List<IPayable> unpaid = new List<IPayable>();
+
+            for (int i = 0; i < allApps.Length; i++)
+            {
+                if (!allApps[i].IsCancelled && !allApps[i].IsPaid)
+                {
+                    unpaid.Add(allApps[i]);
+                }
+            }
+
+            return unpaid.ToArray();
+        }
         public decimal GetPatientDebt(int patientId)
         {
             IPayable[] unpaid = GetUnpaidByPatient(patientId);
@@ -73,34 +54,39 @@ namespace ClinicApp.Managers
             }
             return total;
         }
+        public decimal GetTotalDebt()
+        {
+            IPayable[] unpaid = GetAllUnpaid();
+            decimal total = 0m;
+            for (int i = 0; i < unpaid.Length; i++)
+            {
+                total += unpaid[i].GetCost();
+            }
+            return total;
+        }
         public bool PayAppointment(int appointmentId)
         {
-            Appointment? app = _appointmentManager.FindById(appointmentId);
-            if (app == null || app.IsPaid || app.IsCancelled)
+            Appointment? app = _appointments.FindById(appointmentId);
+            if (app == null || app.IsCancelled || app.IsPaid)
             {
                 return false;
             }
+
+            decimal amount = app.GetCost();
             app.MarkPaid();
+            PaymentReceived?.Invoke(this, new PaymentEventArgs(app.Id, amount));
             return true;
         }
-        public void DisplayUnpaid(IPayable[] items)
+        public void DisplayUnpaid(IPayable[] unpaid)
         {
-            if (items == null || items.Length == 0)
+            if (unpaid.Length == 0)
             {
-                Console.WriteLine("Немає неоплачених записів.");
+                Console.WriteLine("Неоплачених записів немає.");
                 return;
             }
-            for (int i = 0; i < items.Length; i++)
+            for (int i = 0; i < unpaid.Length; i++)
             {
-                IPayable item = items[i];
-                if (item is Appointment app)
-                {
-                    Console.WriteLine($"{app} | Сума: {item.GetCost():F2} грн");
-                }
-                else
-                {
-                    Console.WriteLine($"Запис | Сума: {item.GetCost():F2} грн");
-                }
+                Console.WriteLine(unpaid[i]);
             }
         }
     }
