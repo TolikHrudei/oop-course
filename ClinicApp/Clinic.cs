@@ -19,6 +19,7 @@ namespace ClinicApp
         public ClinicLogger Logger { get; }
         public ClinicExporter Exporter { get; }
         public SessionManager Session { get; }
+        public PatientPassportWriter Passport { get; }
         public Clinic(string name)
         {
             Name = name;
@@ -33,6 +34,7 @@ namespace ClinicApp
             Logger = new ClinicLogger();
             Exporter = new ClinicExporter(this);
             Session = new SessionManager();
+            Passport = new PatientPassportWriter(this);
 
             SubscribeEvents();
         }
@@ -45,6 +47,9 @@ namespace ClinicApp
             Appointments.UrgentAppointmentBooked += Logger.OnUrgentAppointmentBooked;
             Billing.PaymentReceived += Logger.OnPaymentReceived;
             TreatmentPlans.PlanCompleted += Logger.OnPlanCompleted;
+            Patients.PatientAdded += Passport.OnPatientAdded;
+            Appointments.AppointmentCompleted += Passport.OnAppointmentCompleted;
+            TreatmentPlans.PlanCompleted += Passport.OnPlanCompleted;
         }
         public void DisplaySchedule(DateTime date)
         {
@@ -55,7 +60,6 @@ namespace ClinicApp
                 Console.WriteLine("На цю дату записів немає.");
                 return;
             }
-
             Appointments.DisplayAppointments(apps);
         }
         public void GenerateReport()
