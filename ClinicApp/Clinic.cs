@@ -1,5 +1,6 @@
 ﻿using ClinicApp.Managers;
 using ClinicApp.Models;
+using ClinicApp.Utils;
 using System;
 
 namespace ClinicApp
@@ -15,6 +16,8 @@ namespace ClinicApp
         public WaitingQueue<Patient> WaitingRoom { get; }
         public AnalyticsManager Analytics { get; }
         public TreatmentPlanManager TreatmentPlans { get; }
+        public ClinicLogger Logger { get; }
+
         public Clinic(string name)
         {
             Name = name;
@@ -26,7 +29,9 @@ namespace ClinicApp
             WaitingRoom = new WaitingQueue<Patient>();
             Analytics = new AnalyticsManager(Appointments, Doctors, Patients);
             TreatmentPlans = new TreatmentPlanManager();
+            Logger = new ClinicLogger();
         }
+
         public void DisplaySchedule(DateTime date)
         {
             Console.WriteLine($"\n=== Розклад на {date:dd.MM.yyyy} ===");
@@ -39,6 +44,7 @@ namespace ClinicApp
 
             Appointments.DisplayAppointments(apps);
         }
+
         public void GenerateReport()
         {
             Console.WriteLine("\n┌────────────────────────────────────────┐");
