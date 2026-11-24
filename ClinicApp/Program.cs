@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
+using ClinicApp.Events;
 
 class Program
 {
@@ -20,6 +21,7 @@ class Program
         CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
         Console.OutputEncoding = System.Text.Encoding.UTF8;
         Clinic clinic = new Clinic("Медична Клініка");
+        clinic.Appointments.AppointmentBooked += OnAppointmentBookedConsole;
         SeedInitialData(clinic);
         if (clinic.Session.Exists())
         {
@@ -699,6 +701,10 @@ class Program
 
         var records = clinic.MedicalRecords.GetByPatient(patientId);
         clinic.MedicalRecords.DisplayList(records);
+    }
+    static void OnAppointmentBookedConsole(object? sender, AppointmentEventArgs e)
+    {
+        Console.WriteLine($"[EVENT] Запис #{e.AppointmentId} створено: пацієнт #{e.PatientId} -> лікар #{e.DoctorId}, {e.ScheduledAt:dd.MM.yyyy HH:mm}");
     }
     static void AddDiagnosisMenu(Clinic clinic)
     {
