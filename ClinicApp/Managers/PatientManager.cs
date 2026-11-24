@@ -1,4 +1,5 @@
 ﻿using ClinicApp.Enums;
+using ClinicApp.Events;
 using ClinicApp.Models;
 using System;
 using System.Collections.Generic;
@@ -8,6 +9,7 @@ namespace ClinicApp.Managers
     public class PatientManager
     {
         private readonly List<Patient> _patients = new List<Patient>();
+        public event EventHandler<PatientEventArgs>? PatientAdded;
         public int Count => _patients.Count;
         public Patient? this[int index]
         {
@@ -20,16 +22,13 @@ namespace ClinicApp.Managers
                 return _patients[index];
             }
         }
-
-        public Patient? Add(Patient patient)
+        public void Add(Patient patient)
         {
-            if (patient == null)
+            if (patient != null)
             {
-                return null;
+                _patients.Add(patient);
+                PatientAdded?.Invoke(this, new PatientEventArgs(patient.Id, patient.FullName));
             }
-
-            _patients.Add(patient);
-            return patient;
         }
         public bool Remove(int id)
         {
@@ -43,7 +42,6 @@ namespace ClinicApp.Managers
             }
             return false;
         }
-
         public Patient? FindById(int id)
         {
             for (int i = 0; i < _patients.Count; i++)
@@ -56,6 +54,12 @@ namespace ClinicApp.Managers
             return null;
         }
 
+        public bool TryFindById(int id, out Patient? patient)
+        {
+            patient = FindById(id);
+            return patient != null;
+        }
+
         public Patient[] FindByName(string name)
         {
             List<Patient> result = new List<Patient>();
@@ -63,7 +67,6 @@ namespace ClinicApp.Managers
             {
                 return result.ToArray();
             }
-
             string searchName = name.Trim().ToLower();
             for (int i = 0; i < _patients.Count; i++)
             {
@@ -72,7 +75,6 @@ namespace ClinicApp.Managers
                     result.Add(_patients[i]);
                 }
             }
-
             return result.ToArray();
         }
         public Patient[] FindByBloodType(BloodType bloodType)
@@ -86,6 +88,18 @@ namespace ClinicApp.Managers
                 }
             }
             return result.ToArray();
+        }
+        public int GetCountByBloodType(BloodType bloodType)
+        {
+            int count = 0;
+            for (int i = 0; i < _patients.Count; i++)
+            {
+                if (_patients[i].BloodType == bloodType)
+                {
+                    count++;
+                }
+            }
+            return count;
         }
         public Patient[] GetAll()
         {

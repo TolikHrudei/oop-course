@@ -1,6 +1,7 @@
 ﻿using ClinicApp;
 using ClinicApp.Comparators;
 using ClinicApp.Enums;
+using ClinicApp.Events;
 using ClinicApp.Interfaces;
 using ClinicApp.Managers;
 using ClinicApp.Models;
@@ -20,6 +21,7 @@ class Program
         CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
         Console.OutputEncoding = System.Text.Encoding.UTF8;
         Clinic clinic = new Clinic("Медична Клініка");
+        clinic.Appointments.AppointmentBooked += OnAppointmentBookedConsole;
         SeedInitialData(clinic);
         if (clinic.Session.Exists())
         {
@@ -29,7 +31,6 @@ class Program
             {
                 int loaded = clinic.Session.Load(clinic);
                 Console.WriteLine($"Завантажено {loaded} пацієнтів.");
-                clinic.Logger.LogInfo($"Завантажено сесію: додано {loaded} пацієнтів.");
             }
         }
         bool running = true;
@@ -51,6 +52,7 @@ class Program
             Console.WriteLine("║  0. Вийти                                    ║");
             Console.WriteLine("╚══════════════════════════════════════════════╝");
             Console.Write("Оберіть розділ: ");
+
             string choice = Console.ReadLine() ?? "";
             switch (choice)
             {
@@ -85,13 +87,14 @@ class Program
                     RunFilesMenu(clinic);
                     break;
                 case "0":
+                    clinic.Tracker.PrintSummary();
+                    clinic.Tracker.SaveSummary();
                     Console.Write("Зберегти сесію? (y/n): ");
                     string saveAnswer = (Console.ReadLine() ?? "").Trim().ToLower();
                     if (saveAnswer == "y")
                     {
                         clinic.Session.Save(clinic);
                         Console.WriteLine("Сесію збережено.");
-                        clinic.Logger.LogInfo("Сесію збережено у session.dat.");
                     }
                     running = false;
                     break;
@@ -101,42 +104,29 @@ class Program
             }
         }
     }
+    static void OnAppointmentBookedConsole(object? sender, AppointmentEventArgs e)
+    {
+        Console.WriteLine($"[EVENT] Запис #{e.AppointmentId} створено: пацієнт #{e.PatientId} -> лікар #{e.DoctorId}, {e.ScheduledAt:dd.MM.yyyy HH:mm}");
+    }
+
     static void SeedInitialData(Clinic clinic)
     {
-        Patient p1 = new Patient("Іван", "Петренко", new DateTime(1985, 5, 15), BloodType.APositive, "0501234567");
-        clinic.Patients.Add(p1);
-        clinic.Logger.LogInfo($"Додано пацієнта #{p1.Id}: {p1.FullName}");
-
-        Patient p2 = new Patient("Олена", "Коваль", new DateTime(1992, 8, 20), BloodType.ONegative, "0672345678");
-        clinic.Patients.Add(p2);
-        clinic.Logger.LogInfo($"Додано пацієнта #{p2.Id}: {p2.FullName}");
-
-        Patient p3 = new Patient("Василь", "Сидоренко", new DateTime(1978, 12, 10), BloodType.BPositive, "0933456789");
-        clinic.Patients.Add(p3);
-        clinic.Logger.LogInfo($"Додано пацієнта #{p3.Id}: {p3.FullName}");
-
-        Patient p4 = new Patient("Максим", "Бойко", new DateTime(1995, 2, 28), BloodType.APositive, "0631234567");
-        clinic.Patients.Add(p4);
-        clinic.Logger.LogInfo($"Додано пацієнта #{p4.Id}: {p4.FullName}");
+        clinic.Patients.Add(new Patient("Іван", "Петренко", new DateTime(1985, 5, 15), BloodType.APositive, "0501234567"));
+        clinic.Patients.Add(new Patient("Олена", "Коваль", new DateTime(1992, 8, 20), BloodType.ONegative, "0672345678"));
+        clinic.Patients.Add(new Patient("Василь", "Сидоренко", new DateTime(1978, 12, 10), BloodType.BPositive, "0933456789"));
+        clinic.Patients.Add(new Patient("Максим", "Бойко", new DateTime(1995, 2, 28), BloodType.APositive, "0631234567"));
 
         Doctor d1 = new Doctor("Олег", "Сидоренко", Speciality.Cardiology, "LIC-001", "0441234567");
         d1.Schedule = new WorkSchedule(8, 16);
         clinic.Doctors.Add(d1);
-        clinic.Logger.LogInfo($"Додано лікаря #{d1.Id}: {d1.FullName}");
 
         Doctor d2 = new Doctor("Наталія", "Мороз", Speciality.General, "LIC-002", "0442345678");
         d2.Schedule = new WorkSchedule(9, 17);
         clinic.Doctors.Add(d2);
-        clinic.Logger.LogInfo($"Додано лікаря #{d2.Id}: {d2.FullName}");
 
-        Appointment a1 = clinic.Appointments.Book(1, 1, DateTime.Today.AddDays(-2).AddHours(10), 30);
-        clinic.Logger.LogInfo($"Запис #{a1.Id} створено: пацієнт #{a1.PatientId} -> лікар #{a1.DoctorId}");
-
-        Appointment a2 = clinic.Appointments.Book(1, 1, DateTime.Today.AddDays(-1).AddHours(10), 30);
-        clinic.Logger.LogInfo($"Запис #{a2.Id} створено: пацієнт #{a2.PatientId} -> лікар #{a2.DoctorId}");
-
-        Appointment a3 = clinic.Appointments.BookUrgent(2, 2, DateTime.Today.AddDays(-1).AddHours(11), "біль у горлі", 30);
-        clinic.Logger.LogInfo($"Запис #{a3.Id} створено: пацієнт #{a3.PatientId} -> лікар #{a3.DoctorId}");
+        clinic.Appointments.Book(1, 1, DateTime.Today.AddDays(-2).AddHours(10), 30);
+        clinic.Appointments.Book(1, 1, DateTime.Today.AddDays(-1).AddHours(10), 30);
+        clinic.Appointments.BookUrgent(2, 2, DateTime.Today.AddDays(-1).AddHours(11), "біль у горлі", 30);
 
         clinic.MedicalRecords.Add(new Diagnosis(1, 1, DateTime.Today.AddDays(-30), "I10", "Гіпертонічна хвороба", true));
         clinic.MedicalRecords.Add(new Diagnosis(1, 2, DateTime.Today.AddDays(-5), "J06.9", "Гострий ринофарингіт", false));
@@ -185,15 +175,6 @@ class Program
             }
         }
     }
-
-    static void ImportPatientsCsvMenu(Clinic clinic)
-    {
-        Console.Write("Шлях до CSV-файлу: ");
-        string filePath = Console.ReadLine() ?? "";
-        ImportResult result = CsvImporter.ImportPatients(clinic, filePath);
-        result.Print();
-    }
-
     static void ExportAllReportsMenu(Clinic clinic)
     {
         string[] paths = clinic.Exporter.ExportAll();
@@ -202,7 +183,14 @@ class Program
         {
             Console.WriteLine($"  {paths[i]}");
         }
-        clinic.Logger.LogInfo("Експортовано всі звіти.");
+    }
+
+    static void ImportPatientsCsvMenu(Clinic clinic)
+    {
+        Console.Write("Шлях до CSV-файлу: ");
+        string filePath = Console.ReadLine() ?? "";
+        ImportResult result = CsvImporter.ImportPatients(clinic, filePath);
+        result.Print();
     }
 
     static void ShowLastLogLinesMenu(Clinic clinic)
@@ -260,7 +248,7 @@ class Program
                     ChangeTreatmentPlanStatus(clinic, "activate");
                     break;
                 case "5":
-                    ChangeTreatmentPlanStatus(clinic, "complete");
+                    CompleteTreatmentPlanMenu(clinic);
                     break;
                 case "6":
                     ChangeTreatmentPlanStatus(clinic, "cancel");
@@ -277,7 +265,6 @@ class Program
             }
         }
     }
-
     static void ShowAllTreatmentPlans(Clinic clinic)
     {
         TreatmentPlan[] plans = clinic.TreatmentPlans.GetAll();
@@ -286,20 +273,17 @@ class Program
             Console.WriteLine("Планів лікування немає.");
             return;
         }
-
         for (int i = 0; i < plans.Length; i++)
         {
             PrintTreatmentPlan(plans[i]);
         }
     }
-
     static void AddTreatmentPlanMenu(Clinic clinic)
     {
         TreatmentPlan plan = FormBuilder.Build<TreatmentPlan>();
         if (clinic.TreatmentPlans.Add(plan))
         {
             Console.WriteLine($"План лікування [{plan.Id}] додано.");
-            clinic.Logger.LogInfo($"Додано план лікування #{plan.Id} для пацієнта #{plan.PatientId}");
         }
     }
 
@@ -312,7 +296,6 @@ class Program
             clinic.Logger.LogWarning("Помилка введення: некоректний ID пацієнта.");
             return;
         }
-
         TreatmentPlan[] plans = clinic.TreatmentPlans.GetByPatient(patientId);
         if (plans.Length == 0)
         {
@@ -326,6 +309,30 @@ class Program
         }
     }
 
+    static void CompleteTreatmentPlanMenu(Clinic clinic)
+    {
+        Console.Write("ID плану: ");
+        if (!int.TryParse(Console.ReadLine(), out int planId))
+        {
+            Console.WriteLine("Некоректне число.");
+            clinic.Logger.LogWarning("Помилка введення: некоректний ID плану.");
+            return;
+        }
+        TreatmentPlan? plan = clinic.TreatmentPlans.GetById(planId);
+        if (plan == null)
+        {
+            Console.WriteLine("План не знайдено");
+            return;
+        }
+        if (clinic.TreatmentPlans.Complete(planId))
+        {
+            Console.WriteLine($"План [{plan.Id}] завершено.");
+        }
+        else
+        {
+            Console.WriteLine($"Неможливо завершити план зі статусом {plan.Status}.");
+        }
+    }
     static void ChangeTreatmentPlanStatus(Clinic clinic, string action)
     {
         Console.Write("ID плану: ");
@@ -335,14 +342,12 @@ class Program
             clinic.Logger.LogWarning("Помилка введення: некоректний ID плану.");
             return;
         }
-
         TreatmentPlan? plan = clinic.TreatmentPlans.GetById(planId);
         if (plan == null)
         {
             Console.WriteLine("План не знайдено");
             return;
         }
-
         bool changed = false;
         string successMessage = "";
         string failMessage = "";
@@ -352,12 +357,6 @@ class Program
             changed = plan.Activate();
             successMessage = $"План [{plan.Id}] активовано.";
             failMessage = $"Неможливо активувати план зі статусом {plan.Status}.";
-        }
-        else if (action == "complete")
-        {
-            changed = plan.Complete();
-            successMessage = $"План [{plan.Id}] завершено.";
-            failMessage = $"Неможливо завершити план зі статусом {plan.Status}.";
         }
         else if (action == "cancel")
         {
@@ -373,6 +372,7 @@ class Program
     {
         Console.WriteLine($"[{plan.Id}] Пацієнт #{plan.PatientId} | Діагноз: {plan.Diagnosis} | Тривалість: {plan.DurationDays} дн. | Статус: {plan.Status}");
     }
+
     static void RunAnalyticsMenu(Clinic clinic)
     {
         bool inMenu = true;
@@ -424,6 +424,7 @@ class Program
             }
         }
     }
+
     static List<DoctorStats> CollectDoctorStats(Clinic clinic)
     {
         List<DoctorStats> list = new List<DoctorStats>();
@@ -487,7 +488,6 @@ class Program
             }
         }
     }
-
     static void ShowDoctorAvailableSlotsMenu(Clinic clinic)
     {
         Console.Write("ID лікаря: ");
@@ -503,7 +503,6 @@ class Program
             Console.WriteLine("Лікаря не знайдено");
             return;
         }
-
         ISchedulable schedulable = doctor;
 
         Console.Write("Дата (dd.MM.yyyy): ");
@@ -521,6 +520,7 @@ class Program
             clinic.Logger.LogWarning("Помилка введення: некоректна кількість слотів.");
             return;
         }
+
         try
         {
             DateTime[] slots = schedulable.GetAvailableSlots(date, slotCount);
@@ -595,9 +595,9 @@ class Program
             Console.WriteLine("Невідома команда.");
             return;
         }
-
         clinic.Appointments.DisplayAppointments(result);
     }
+
     static void CancelAllPatientAppointmentsMenu(Clinic clinic)
     {
         Console.Write("ID пацієнта: ");
@@ -609,12 +609,7 @@ class Program
         Console.Write("Причина (Enter — без причини): ");
         string reason = Console.ReadLine() ?? "";
 
-        Appointment[] records = clinic.Appointments.GetByPatient(patientId);
-        int cancelled = AppointmentManager.CancelAll(records, reason);
-        if (cancelled > 0)
-        {
-            clinic.Logger.LogInfo($"Скасовано записів пацієнта #{patientId}: {cancelled}");
-        }
+        int cancelled = clinic.Appointments.CancelAllForPatient(patientId, reason);
         Console.WriteLine($"Скасовано записів: {cancelled}");
     }
 
@@ -662,7 +657,6 @@ class Program
             }
         }
     }
-
     static void ShowPatientSummaryMenu(Clinic clinic)
     {
         Console.Write("ID пацієнта: ");
@@ -690,7 +684,6 @@ class Program
             clinic.Logger.LogWarning("Помилка введення: некоректний ID пацієнта.");
             return;
         }
-
         if (clinic.Patients.FindById(patientId) == null)
         {
             Console.WriteLine("Пацієнта з таким ID не знайдено.");
@@ -729,6 +722,7 @@ class Program
             Console.WriteLine("Лікаря з таким ID не знайдено.");
             return;
         }
+
         Console.Write("Код діагнозу (напр. J06.9): ");
         string code = Console.ReadLine() ?? "";
 
@@ -761,7 +755,6 @@ class Program
             clinic.Logger.LogWarning($"Помилка введення: {e.Message}");
         }
     }
-
     static void AddLabResultMenu(Clinic clinic)
     {
         Console.Write("ID пацієнта: ");
@@ -771,13 +764,11 @@ class Program
             clinic.Logger.LogWarning("Помилка введення: некоректний ID пацієнта.");
             return;
         }
-
         if (clinic.Patients.FindById(patientId) == null)
         {
             Console.WriteLine("Пацієнта з таким ID не знайдено.");
             return;
         }
-
         Console.Write("ID лікаря: ");
         if (!int.TryParse(Console.ReadLine(), out int doctorId))
         {
@@ -785,7 +776,6 @@ class Program
             clinic.Logger.LogWarning("Помилка введення: некоректний ID лікаря.");
             return;
         }
-
         if (clinic.Doctors.FindById(doctorId) == null)
         {
             Console.WriteLine("Лікаря з таким ID не знайдено.");
@@ -793,7 +783,6 @@ class Program
         }
         Console.Write("Назва аналізу: ");
         string testName = Console.ReadLine() ?? "";
-
         Console.Write("Значення (число): ");
         if (!double.TryParse(Console.ReadLine(), NumberStyles.Float, CultureInfo.InvariantCulture, out double val))
         {
@@ -834,6 +823,7 @@ class Program
             clinic.Logger.LogWarning($"Помилка введення: {e.Message}");
         }
     }
+
     static void AddPrescriptionMenu(Clinic clinic)
     {
         Console.Write("ID пацієнта: ");
@@ -880,6 +870,7 @@ class Program
 
         Console.Write("Інструкція (Enter — пропустити): ");
         string instructions = Console.ReadLine() ?? "";
+
         try
         {
             Prescription rx = new Prescription(patientId, doctorId, DateTime.Today, medicationName, dosage, durationDays, instructions);
@@ -975,11 +966,13 @@ class Program
         clinic.Billing.DisplayUnpaid(unpaid);
         Console.WriteLine($"Борг: {debt:F2} грн");
     }
+
     static void ShowAllUnpaidMenu(Clinic clinic)
     {
         IPayable[] unpaid = clinic.Billing.GetAllUnpaid();
         clinic.Billing.DisplayUnpaid(unpaid);
     }
+
     static void PayAppointmentMenu(Clinic clinic)
     {
         Console.Write("ID запису для оплати: ");
@@ -993,7 +986,6 @@ class Program
         if (success)
         {
             Console.WriteLine($"Запис [{appointmentId}] оплачено.");
-            clinic.Logger.LogInfo($"Оплачено запис #{appointmentId}");
         }
         else
         {
@@ -1044,6 +1036,7 @@ class Program
             }
         }
     }
+
     static void AddPatientToQueueMenu(Clinic clinic)
     {
         Console.Write("ID пацієнта: ");
@@ -1077,7 +1070,6 @@ class Program
             clinic.Logger.LogWarning($"Помилка введення: {ex.Message}");
         }
     }
-
     static void ShowFirstPatientMenu(Clinic clinic)
     {
         try
@@ -1099,7 +1091,6 @@ class Program
             Console.WriteLine("Черга порожня.");
             return;
         }
-
         for (int i = 0; i < queue.Length; i++)
         {
             Console.WriteLine($"{i + 1}. {queue[i].FullName}");
