@@ -16,6 +16,7 @@ namespace ClinicApp
         public WaitingQueue<Patient> WaitingRoom { get; }
         public AnalyticsManager Analytics { get; }
         public TreatmentPlanManager TreatmentPlans { get; }
+        public ReportManager Reports { get; }
         public ClinicLogger Logger { get; }
         public ClinicExporter Exporter { get; }
         public SessionManager Session { get; }
@@ -32,6 +33,7 @@ namespace ClinicApp
             WaitingRoom = new WaitingQueue<Patient>();
             Analytics = new AnalyticsManager(Appointments, Doctors, Patients);
             TreatmentPlans = new TreatmentPlanManager();
+            Reports = new ReportManager(Appointments, Doctors, Patients);
             Logger = new ClinicLogger();
             Exporter = new ClinicExporter(this);
             Session = new SessionManager();
