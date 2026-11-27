@@ -1,6 +1,7 @@
 ﻿using ClinicApp.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ClinicApp.Managers
 {
@@ -17,56 +18,31 @@ namespace ClinicApp.Managers
         }
         public IEnumerable<DoctorStats> ComputeDoctorStats()
         {
-            var doctors = _doctors.GetAll();
-            var appointments = _appointments.GetAll();
+            Appointment[] appointments = _appointments.GetAll();
+            Doctor[] doctors = _doctors.GetAll();
 
-            foreach (var doctor in doctors)
+            return doctors.Select(d =>
             {
-                int count = 0;
-                decimal revenue = 0m;
-                DateTime lastDate = DateTime.MinValue;
-
-                foreach (var app in appointments)
-                {
-                    if (app.DoctorId == doctor.Id)
-                    {
-                        count++;
-                        revenue += app.GetCost();
-                        if (app.ScheduledAt > lastDate)
-                        {
-                            lastDate = app.ScheduledAt;
-                        }
-                    }
-                }
-                yield return new DoctorStats(doctor.Id, doctor.FullName, count, revenue, lastDate);
-            }
+                var docApps = appointments.Where(a => a.DoctorId == d.Id);
+                int count = docApps.Count();
+                decimal revenue = docApps.Sum(a => a.GetCost());
+                DateTime lastAppointment = docApps.Any() ? docApps.Max(a => a.ScheduledAt) : DateTime.MinValue;
+                return new DoctorStats(d.Id, d.FullName, count, revenue, lastAppointment);
+            });
         }
-
         public IEnumerable<PatientStats> ComputePatientStats()
         {
-            var patients = _patients.GetAll();
-            var appointments = _appointments.GetAll();
+            Appointment[] appointments = _appointments.GetAll();
+            Patient[] patients = _patients.GetAll();
 
-            foreach (var patient in patients)
+            return patients.Select(p =>
             {
-                int count = 0;
-                decimal spent = 0m;
-                DateTime lastDate = DateTime.MinValue;
-
-                foreach (var app in appointments)
-                {
-                    if (app.PatientId == patient.Id)
-                    {
-                        count++;
-                        spent += app.GetCost();
-                        if (app.ScheduledAt > lastDate)
-                        {
-                            lastDate = app.ScheduledAt;
-                        }
-                    }
-                }
-                yield return new PatientStats(patient.Id, patient.FullName, count, spent, lastDate);
-            }
+                var patApps = appointments.Where(a => a.PatientId == p.Id);
+                int visits = patApps.Count();
+                decimal totalSpent = patApps.Sum(a => a.GetCost());
+                DateTime lastVisit = patApps.Any() ? patApps.Max(a => a.ScheduledAt) : DateTime.MinValue;
+                return new PatientStats(p.Id, p.FullName, visits, totalSpent, lastVisit);
+            });
         }
     }
 }
